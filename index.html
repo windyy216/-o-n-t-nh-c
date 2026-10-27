@@ -170,7 +170,7 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 2 · bản 2.3</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 2 · bản 2.4</small></h1>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
@@ -290,6 +290,7 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
       <h3>4 · Loa khi micro mở</h3>
       <p class="muted" style="margin:0">Bấm hai nút, so tiếng to nhỏ bằng tai.</p>
       <div class="row"><button class="btn ghost" id="mPlayOff">Phát Đô (micro tắt)</button><button class="btn ghost" id="mPlayOn">Phát Đô (micro mở)</button></div>
+      <p class="muted" style="margin:0">Bản 2.4: khi micro mở, app tạm tắt micro trong lúc phát tiếng rồi tự bật lại, để tiếng không bị nhỏ. Trang thử lại và chọn kết quả bên dưới.</p>
       <div class="seg" data-opt="loud"><button data-v="same">Tiếng như nhau</button><button data-v="quieter">Tiếng nhỏ đi</button><button data-v="silent">Không nghe gì</button></div>
     </div>
     <div class="card">
@@ -533,7 +534,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 
 /* ---------- Lưu trữ (có số phiên bản) ---------- */
 const STORE_KEY = 'daonot';
-const DEFAULTS = { schema: 1, settings: { names: 'both', finger: true, sound: true, grade: 'hard' },
+const DEFAULTS = { schema: 1, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause: true },
   setup: { clef: 'treble', range: 'inside', answer: 'names', count: '10' },
   hands: { pos: 'do', hand: 'right' }, stats: { notes: {} }, mic: { calib: { semis: 0 } } };
 function migrate(d) {
@@ -545,6 +546,7 @@ function migrate(d) {
 }
 let state;
 try { state = migrate(JSON.parse(localStorage.getItem(STORE_KEY))); } catch { state = structuredClone(DEFAULTS); }
+if (state.mic.loudVer !== '2.4') { delete state.mic.loud; state.mic.loudVer = '2.4'; }
 function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch {} }
 
 /* ---------- Âm thanh ---------- */
@@ -563,9 +565,11 @@ function audio() {
 }
 function play(n, when = 0, force = false) {
   if (!state.settings.sound && !force) return;
-  const a = audio(), t = a.currentTime + 0.02 + when, f = C.freq(n);
   const dur = Math.max(0.8, 2.2 - (C.midi(n) - 48) * 0.03);
-  Mic.gate(when + Math.min(dur, 1.3));
+  // Micro đang mở thì iPhone hạ tiếng loa: tạm tắt micro trong lúc phát (nếu Trang chọn cách này)
+  const lead = Mic.on && state.settings.micPause !== false ? Mic.pauseFor(when + Math.min(dur, 1.3) + 0.25) : 0;
+  const a = audio(), t = a.currentTime + 0.02 + lead + when, f = C.freq(n);
+  Mic.gate(lead + when + Math.min(dur, 1.3));
   const out = a.createGain(); out.connect(master);
   out.gain.setValueAtTime(0.0001, t);
   out.gain.exponentialRampToValueAtTime(0.5, t + 0.006);
@@ -695,7 +699,7 @@ function go(v) {
   $$('.view').forEach(s => { s.hidden = s.id !== 'v-' + v; s.style.display = s.hidden ? 'none' : 'flex'; });
   $('#backBtn').hidden = v === 'home';
   $('#title').firstChild.textContent = TITLES[v];
-  $('#subtitle').textContent = v === 'home' ? 'Giai đoạn 2 · bản 2.3' : '';
+  $('#subtitle').textContent = v === 'home' ? 'Giai đoạn 2 · bản 2.4' : '';
   $('#settingsBtn').hidden = v === 'settings';
   if (v === 'explore') initExplore();
   if (v === 'hands') renderHands();
@@ -1002,8 +1006,40 @@ const Mic = {
       return { ok: false, error: err.name };
     }
   },
+  // Tạm tắt micro để loa về âm lượng bình thường, tự bật lại sau `sec` giây. Trả về độ trễ trước khi phát (giây).
+  pauseFor(sec) {
+    const until = performance.now() + sec * 1000;
+    let lead = 0;
+    if (!this.paused) {
+      this.paused = true; lead = 0.15;
+      clearInterval(this.timer);
+      this.stream.getTracks().forEach(t => t.stop());
+      try { this.src.disconnect(); } catch {}
+      setSession('playback');
+    }
+    this.resumeAt = Math.max(this.resumeAt || 0, until);
+    clearTimeout(this.resumeTimer);
+    this.resumeTimer = setTimeout(() => this.resume(), Math.max(0, this.resumeAt - performance.now()));
+    return lead;
+  },
+  async resume() {
+    if (!this.on || !this.paused) return;
+    try {
+      setSession('play-and-record');
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      this.paused = false; this.resumeAt = 0;
+      this.wire();
+      this.L.reset(); this.L.gate(performance.now() / 1000 + 0.2);
+      this.timer = setInterval(() => this.tick(), 40);
+    } catch (err) {
+      this.paused = false; this.on = false; this.L = null; this.unlock(); setSession('playback');
+      if (this.onFrame) this.onFrame(null);
+    }
+  },
   stop() {
     if (!this.on) return;
+    clearTimeout(this.resumeTimer);
+    if (this.paused) { this.paused = false; this.on = false; this.L = null; this.unlock(); setSession('playback'); if (this.onFrame) this.onFrame(null); return; }
     clearInterval(this.timer);
     this.stream.getTracks().forEach(t => t.stop());
     try { this.src.disconnect(); } catch {}
@@ -1181,11 +1217,12 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · ban 2.3',
+    'Dao Not Nhac · ban 2.4',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),
     'Bài test: ' + (m.test ? m.test.score + '/' + m.test.total + (m.test.miss.length ? ' · lệch: ' + m.test.miss.join(', ') : '') : 'chưa làm'),
+    'Tạm tắt micro khi phát: ' + (state.settings.micPause !== false ? 'có' : 'không') + ' · lần thử loa: bản 2.4',
     'Loa khi micro mở: ' + ({ same: 'như nhau', quieter: 'nhỏ đi', silent: 'không nghe' }[m.loud] || 'chưa thử'),
     'Bỏ qua nút im lặng: ' + ('audioSession' in navigator ? 'có' : 'không'),
     'Giữ màn hình sáng: ' + ('wakeLock' in navigator ? 'có' : 'không'),
@@ -1197,7 +1234,7 @@ function renderMicReport() {
   $('#mReport').textContent = lines.join('\n');
 }
 $('#mPlayOff').onclick = () => { if (Mic.on) { Mic.stop(); syncMicUi(); } play(C.parse('C5'), 0, true); };
-$('#mPlayOn').onclick = async () => { if (await ensureMic()) setTimeout(() => play(C.parse('C5'), 0, true), 300); };
+$('#mPlayOn').onclick = async () => { if (await ensureMic()) setTimeout(() => { play(C.parse('C5'), 0, true); setTimeout(syncMicUi, 2200); }, 300); };
 $('#mCopy').onclick = async () => {
   renderMicReport(); save();
   const t = $('#mReport').textContent;

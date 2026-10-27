@@ -170,6 +170,24 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 .lesson p { margin: 0; max-width: 62ch; }
 .lesson #lBody { display: flex; flex-direction: column; gap: 10px; }
 textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, Menlo, monospace; font-size: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); padding: 10px; resize: vertical; }
+.gcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 4px 10px 10px 4px; display: flex; flex-direction: column; gap: 4px; }
+.sic.big { width: 48px; height: 48px; font-size: 24px; }
+.stars { letter-spacing: 2px; }
+.seg.mini { padding-left: 62px; }
+.seg.mini button { min-height: 34px; padding: 4px 12px; font-size: 13px; }
+.arena { border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); }
+.arena canvas { display: block; width: 100%; touch-action: manipulation; }
+.feedback.swap { background: color-mix(in srgb, var(--sun) 30%, var(--surface)); }
+.mgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 560px) { .mgrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.mcard { position: relative; aspect-ratio: 3 / 4; max-width: 100%; border: 0; padding: 0; background: none; cursor: pointer; perspective: 600px; }
+.mcard .face, .mcard .back { position: absolute; inset: 0; border-radius: 14px; display: grid; place-items: center; backface-visibility: hidden; transition: transform .35s; font-family: var(--f-display); font-size: 24px; font-weight: 800; }
+.mcard .face { background: var(--paper); color: #1c1c1c; transform: rotateY(180deg); border: 2px solid var(--line); overflow: hidden; }
+.mcard .face svg { width: 100%; }
+.mcard .back { background: var(--sea); color: var(--sea-ink); font-size: 30px; }
+.mcard.up .face { transform: rotateY(0); }
+.mcard.up .back { transform: rotateY(-180deg); }
+.mcard.ok .face { border-color: var(--good); box-shadow: 0 0 0 3px color-mix(in srgb, var(--good) 40%, transparent); }
 .meter { position: relative; height: 16px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
 .meter .thr { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--sun); }
 .meter i { display: block; height: 100%; width: 0; background: var(--good); transition: width .08s; }
@@ -206,7 +224,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 3 · bản 3.2</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 4 · bản 4.0</small></h1>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
@@ -225,6 +243,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
     <div class="menu">
       <button class="tile main" data-go="map"><span class="ic">🏝️</span><div><b>Bản đồ 6 đảo</b><br><span>Lộ trình chính, đi từng bước</span></div></button>
       <button class="tile" data-go="class"><span class="ic">🎒</span><b>Theo lớp</b><span id="hClassSub"></span></button>
+      <button class="tile" data-go="games"><span class="ic">🎮</span><b>Sảnh trò chơi</b><span>Phi đội, Mưa nốt, Thang máy, Đổi thế tay, Ghép đôi</span></button>
       <button class="tile" data-go="setup"><span class="ic">🎯</span><b>Luyện tự do</b><span id="hWeak">Gọi tên nốt, chọn khóa và vùng nốt</span></button>
       <button class="tile" data-go="explore"><span class="ic">🎹</span><b>Phím & khuông</b><span>Bấm phím nào, thấy ngay nốt đó ở cả hai khóa</span></button>
       <button class="tile" data-go="hands"><span class="ic">✋</span><b>Thế tay</b><span>Thế Đô, Sol, Rê · số ngón 1–5</span></button>
@@ -273,6 +292,34 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
     <div class="label" id="clsNow"></div>
     <div class="steps" id="clsSteps"></div>
     <button class="btn wide" id="clsMix">🎯 Luyện tổng hợp bài này</button>
+  </section>
+
+  <!-- SẢNH TRÒ CHƠI -->
+  <section id="v-games" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="card">
+      <div class="label">Nốt dùng trong trò chơi · <span id="gmPoolInfo"></span></div>
+      <div class="seg" data-opt="gpool"><button data-v="hoc">Nốt đã học</button><button data-v="sol">Khóa Sol</button><button data-v="fa">Khóa Fa</button><button data-v="hai">Cả hai khóa</button><button data-v="phu">Có dòng kẻ phụ</button></div>
+      <div class="label">Chơi bằng</div>
+      <div class="seg" data-opt="ginput"><button data-v="piano">🎹 Đàn thật (micro)</button><button data-v="keys">Đàn ảo</button></div>
+    </div>
+    <div class="muted" id="gmMsg" role="status"></div>
+    <div class="steps" id="gmList"></div>
+  </section>
+
+  <!-- ĐẤU TRƯỜNG (Phi đội, Mưa nốt) -->
+  <section id="v-arena" class="view" hidden style="flex-direction:column;gap:10px">
+    <div class="row" style="justify-content:space-between"><span class="label" id="arTitle"></span><span class="chip" id="arMic" hidden>🎙 đang nghe</span></div>
+    <div class="label" id="arScore" style="font-variant-numeric:tabular-nums"></div>
+    <div class="arena"><canvas id="arCanvas" aria-label="Màn chơi"></canvas></div>
+    <div class="kbwrap"><div class="kb" id="arKb"></div></div>
+    <div class="row"><button class="btn ghost" id="arPause">Tạm dừng</button><button class="btn ghost" id="arStop">Kết thúc</button></div>
+  </section>
+
+  <!-- GHÉP ĐÔI -->
+  <section id="v-match" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="seg" data-opt="mlevel"><button data-v="ten">Đô ↔ C</button><button data-v="khuong">Nốt trên khuông ↔ tên</button></div>
+    <div class="muted" id="mtInfo"></div>
+    <div class="mgrid" id="mtGrid"></div>
   </section>
 
   <!-- BÀI HỌC -->
@@ -425,7 +472,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
       <button class="btn ghost" id="bRestore">Khôi phục</button>
       <div class="muted" id="bMsg" role="status"></div>
     </div>
-    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 3 · bản 3.2 · dữ liệu phiên bản 2</p>
+    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 4 · bản 4.0 · dữ liệu phiên bản 2</p>
   </section>
 </div>
 
@@ -853,7 +900,8 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
   }
 
   // ---------- Nhiệm vụ hôm nay ----------
-  const SHAPE = { 5: { review: 12, cls: 0, road: 0 }, 10: { review: 8, cls: 1, road: 1 }, 20: { review: 10, cls: 2, road: 2 }, 30: { review: 12, cls: 3, road: 3 } };
+  const SHAPE = { 5: { review: 12, cls: 0, road: 0, games: 0 }, 10: { review: 8, cls: 1, road: 1, games: 1 }, 20: { review: 10, cls: 2, road: 2, games: 1 }, 30: { review: 12, cls: 3, road: 3, games: 2 } };
+  const GAME_ORDER = ['plane', 'rain', 'lift', 'swap', 'match'];
   function buildPlan(minutes, ctx) {
     const { progress, concepts, classTopic } = ctx;
     const shape = SHAPE[minutes] || SHAPE[10];
@@ -870,10 +918,13 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
       const pool = learnedPool(progress);
       if (pool.length) tasks.push({ kind: 'mix', track: 'road', pool, count: 10 * (shape.road - road.length) });
     }
+    // trò chơi đổi lượt theo ngày
+    const day = ctx.today ? Math.round(Date.UTC(...ctx.today.split('-').map((v, i) => i === 1 ? v - 1 : +v)) / 864e5) : 0;
+    for (let g = 0; g < shape.games; g++) tasks.push({ kind: 'game', game: GAME_ORDER[(day + g * 2) % GAME_ORDER.length] });
     return tasks.map(t => ({ ...t, done: false }));
   }
 
-  const api = { dayKey, addDays, srsUpdate, reviewPool, weakCount, streak, stepState, islandProgress, roadNext, classNext, topicPool, learnedPool, buildPlan, GAP };
+  const api = { dayKey, addDays, srsUpdate, reviewPool, weakCount, streak, stepState, islandProgress, roadNext, classNext, topicPool, learnedPool, buildPlan, GAP, GAME_ORDER };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Plan = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -888,11 +939,12 @@ const STORE_KEY = 'daonot';
 const DEFAULTS = { schema: 2, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause: true, sens: 'cao', minutes: 10 },
   setup: { clef: 'treble', range: 'inside', answer: 'names', count: '10' },
   hands: { pos: 'do', hand: 'right' }, mic: { calib: { semis: 0 } },
-  srs: {}, progress: {}, days: {}, classTopic: 'c18', manualConcepts: [], today: null };
+  srs: {}, progress: {}, days: {}, classTopic: 'c18', manualConcepts: [], today: null,
+  games: { pool: 'hoc', input: 'keys', best: {}, acc: {}, mode: {}, matchLevel: 'ten' } };
 function migrate(d) {
   const out = structuredClone(DEFAULTS);
   if (!d || typeof d !== 'object') return out;
-  for (const k of ['settings', 'setup', 'hands', 'mic', 'srs', 'progress', 'days']) Object.assign(out[k], d[k] || {});
+  for (const k of ['settings', 'setup', 'hands', 'mic', 'srs', 'progress', 'days', 'games']) Object.assign(out[k], d[k] || {});
   for (const k of ['classTopic', 'manualConcepts', 'today']) if (d[k] !== undefined) out[k] = d[k];
   // phiên bản 1 → 2: thống kê nốt cũ chuyển thành dữ liệu ôn tập
   if ((d.schema || 1) < 2 && d.stats && d.stats.notes) {
@@ -975,10 +1027,11 @@ function drawStaves(container, staves, opts = {}) {
       x0 += Math.abs(st.keySig) * 10 + 6;
     }
     st.items.forEach((it, i) => {
+      if (!it) return;
       const cx = x0 + 22 + i * step, p = C.staffPos(it.note, st.clef), cy = y(p);
       const col = it.color || ink;
       C.ledgerLines(p).forEach(q => el('line', { x1: cx - 13, x2: cx + 13, y1: y(q), y2: y(q), stroke: ink, 'stroke-width': 1.3 }, svg));
-      if (it.note.acc) txt(svg, cx - 22, cy + 0.38 * S, it.note.acc > 0 ? '♯' : '♭', { 'font-family': 'var(--f-music)', 'font-size': 2.3 * S, fill: col });
+      if (it.note.acc && !it.hideAcc) txt(svg, cx - 22, cy + 0.38 * S, it.note.acc > 0 ? '♯' : '♭', { 'font-family': 'var(--f-music)', 'font-size': 2.3 * S, fill: col });
       el('ellipse', { cx, cy, rx: 0.68 * S, ry: 0.47 * S, transform: `rotate(-20 ${cx} ${cy})`, fill: col }, svg);
       const up = p < 4;
       if (up) el('line', { x1: cx + 0.62 * S, x2: cx + 0.62 * S, y1: cy - 1, y2: cy - 3.4 * S, stroke: col, 'stroke-width': 1.4 }, svg);
@@ -1061,13 +1114,14 @@ function buildKeyboard(root, onPress) {
 
 /* ---------- Điều hướng ---------- */
 const TITLES = { home: 'Đảo Nốt Nhạc', setup: 'Luyện tự do', game: 'Luyện đọc nốt', result: 'Kết quả', explore: 'Phím & khuông', hands: 'Thế tay', mic: 'Micro & hiệu chỉnh', settings: 'Cài đặt',
-  today: 'Nhiệm vụ hôm nay', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
-const BACK = { setup: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
-const VERSION = 'Giai đoạn 3 · bản 3.2';
+  today: 'Nhiệm vụ hôm nay', games: 'Sảnh trò chơi', arena: 'Trò chơi', match: 'Ghép đôi Đô–C', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
+const BACK = { setup: 'home', games: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
+const VERSION = 'Giai đoạn 4 · bản 4.0';
 let current = 'home';
 // inFlow = màn hình nằm trong một lượt tập (trò chơi, bài học, kết quả): nút quay lại về nơi bắt đầu lượt đó
 function go(v, inFlow) {
-  if (v !== 'game' && v !== 'mic' && v !== 'seq') Mic.stop();
+  if (v !== 'game' && v !== 'mic' && v !== 'seq' && v !== 'arena') Mic.stop();
+  if (current === 'arena' && v !== 'arena' && AR) { AR.running = false; AR = null; }
   Mic.onNote = null; Mic.onFrame = null;
   if (current === 'mic' && v !== 'mic') micTest = null;
   if (!inFlow && BACK[v] === undefined && v !== 'home') flowBack = 'home';
@@ -1085,11 +1139,12 @@ function go(v, inFlow) {
   if (v === 'map') renderMap();
   if (v === 'island') renderIsland();
   if (v === 'class') renderClass();
+  if (v === 'games') renderGames();
   window.scrollTo(0, 0);
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 $('#backBtn').onclick = () => {
-  if (['game', 'lesson', 'seq'].includes(current)) { G = null; SQ = null; }
+  if (['game', 'lesson', 'seq', 'arena', 'match'].includes(current)) { G = null; SQ = null; MT = null; }
   go(BACK[current] || flowBack || 'home');
 };
 $('#settingsBtn').onclick = () => go('settings');
@@ -1178,7 +1233,7 @@ function freePool() {
 const hidesLabels = () => !G || G.mode !== 'names';
 // cfg: { title, pool:[{clef,note}], count, keySig, octave, onDone(result), againLabel }
 async function startDrill(cfg) {
-  let mode = state.setup.answer;
+  let mode = cfg.mode || state.setup.answer;
   if (cfg.octave && mode === 'names') mode = 'keys'; // bài cần đúng cả phím thì không trả lời bằng nút tên
   if (mode === 'piano') {
     const r = await Mic.start();
@@ -1234,6 +1289,7 @@ function buildAnswers() {
 }
 function pick() {
   // Nốt sai được đưa lại sau 2–3 câu
+  if (G.sequence) return G.sequence[G.i];
   const due = G.queue.findIndex(x => x.at <= G.i);
   if (due >= 0) return G.queue.splice(due, 1)[0].q;
   let q;
@@ -1242,10 +1298,17 @@ function pick() {
   return q;
 }
 function drawQ(item) {
+  if (G.grand) { // khuông đôi: nốt trước (mờ) và nốt hiện tại, mỗi nốt nằm ở khóa của nó
+    const cells = [G.prev, { ...G.q, item }].filter(Boolean);
+    const mk = clef => cells.map(c => c.clef === clef ? (c.item || { note: c.note, color: '#9fb4b6' }) : null);
+    drawStaves($('#gSheet'), [{ clef: 'treble', items: mk('treble') }, { clef: 'bass', items: mk('bass') }], { minWidth: 220, step: 60, pad: 4.2 * S, aria: 'Nốt cần đọc' });
+    return;
+  }
   drawStaves($('#gSheet'), [{ clef: G.q.clef, keySig: G.keySig, items: [{ hideAcc: coveredByKey(G.q.note, G.keySig), ...item }] }], { minWidth: 200, aria: 'Nốt cần đọc' });
 }
 function nextQ() {
   if (G.i >= G.total) return finish();
+  G.prev = G.grand ? G.last : null;
   G.q = pick(); G.last = G.q; G.locked = false;
   $('#qNum').textContent = (G.i + 1) + '/' + G.total;
   $('#qBar').style.width = (G.i / G.total * 100) + '%';
@@ -1253,7 +1316,7 @@ function nextQ() {
   drawQ({ note: G.q.note });
   const fb = $('#gFeedback'); fb.className = 'feedback';
   fb.querySelector('b').textContent = { keys: 'Bấm đúng phím này trên đàn ảo', piano: 'Đánh nốt này trên đàn thật', self: 'Đánh nốt này trên đàn thật, rồi xem đáp án', names: 'Nốt này tên gì?' }[G.mode];
-  $('#gHint').textContent = (G.q.clef === 'treble' ? 'Khóa Sol · tay phải' : 'Khóa Fa · tay trái') + (G.keySig ? ' · nhớ nhìn hóa biểu đầu khuông' : '');
+  $('#gHint').textContent = G.prev ? liftHint(G.prev, G.q) : (G.q.clef === 'treble' ? 'Khóa Sol · tay phải' : 'Khóa Fa · tay trái') + (G.keySig ? ' · nhớ nhìn hóa biểu đầu khuông' : '');
   $$('#gAnswers button').forEach(b => b.className = '');
   gKb.clear();
   $('#gNext').hidden = true;
@@ -1657,7 +1720,7 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · ban 3.2',
+    'Dao Not Nhac · ban 4.0',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),
@@ -1751,61 +1814,77 @@ function openLesson(id, after) {
 }
 $('#lDone').onclick = () => { recordStep(lessonId, true); markDay(); afterStepScreen(lessonAfter || {}); };
 
-/* ---------- LEO THẾ TAY (đánh lần lượt các nốt của thế tay, lên rồi xuống, 2 lượt) ---------- */
+/* ---------- LEO THẾ TAY / ĐỔI THẾ TAY: đánh lần lượt các nốt theo từng câu, mỗi câu một thế tay ---------- */
 let SQ = null, qsKb = null;
-async function startSeq(id, after) {
+// phrase: { pos, hand, notes:[note], label }
+function phraseOf(pos, hand, notes, label) {
+  const list = C.handPosition(pos, hand);
+  return { pos, hand, list, notes, label: label || C.POSITIONS[pos].label + ' · ' + (hand === 'right' ? 'tay phải' : 'tay trái') };
+}
+function startSeq(id, after) {
   const st = K.STEPS[id];
-  const list = C.handPosition(st.pos, st.hand);
-  const up = list.map(x => x.note), order = [...up, ...up.slice(0, -1).reverse()];
-  const targets = [...order, ...order.slice(1)];
-  let mode = state.setup.answer === 'piano' ? 'piano' : 'keys';
+  const up = C.handPosition(st.pos, st.hand).map(x => x.note), order = [...up, ...up.slice(0, -1).reverse()];
+  startPhrases({ title: st.title, phrases: [phraseOf(st.pos, st.hand, [...order, ...order.slice(1)])], note: 'Đi lên rồi đi xuống, 2 lượt.',
+    onDone: r => {
+      recordStep(id, true, r); if (after.onFinish) after.onFinish(true);
+      showResult(r, { passed: true, passMsg: 'Xong "' + st.title + '" ✓' + (r.total - r.score ? ' · bấm nhầm ' + (r.total - r.score) + ' lần' : ' · không nhầm lần nào'), again: () => runStep(id, after), next: after.next, back: after.back, backLabel: after.backLabel });
+    } });
+}
+async function startPhrases(cfg) {
+  let mode = cfg.mode || (state.setup.answer === 'piano' ? 'piano' : 'keys');
   if (mode === 'piano') { const r = await Mic.start(); if (!r.ok) mode = 'keys'; }
-  SQ = { id, st, after, list, targets, i: 0, errors: 0, mode, clef: st.hand === 'right' ? 'treble' : 'bass' };
+  SQ = { ...cfg, p: 0, i: 0, errors: 0, mode, total: cfg.phrases.reduce((a, ph) => a + ph.notes.length, 0), done: 0, missed: [] };
   if (!qsKb) qsKb = buildKeyboard($('#qsKb'), n => seqInput(C.midi(n), n));
   qsKb.labels('off');
-  $('#qsTitle').textContent = st.title;
+  $('#qsTitle').textContent = cfg.title;
   go('seq', true);
+  $('#title').firstChild.textContent = cfg.header || TITLES.seq;
   if (mode === 'piano') { Mic.onNote = m => seqInput(m); Mic.onFrame = null; }
-  renderSeq();
-  requestAnimationFrame(() => qsKb.center(C.id(list[2].note)));
+  renderSeq(true);
 }
-function renderSeq() {
-  const { list, targets, i, clef } = SQ;
-  const cur = targets[i];
-  drawStaves($('#qsSheet'), [{ clef, items: list.map(x => ({ note: x.note, finger: state.settings.finger ? x.finger : 0, color: cur && C.midi(x.note) === C.midi(cur) ? '#e09a00' : undefined })) }], { minWidth: 300 });
+function renderSeq(newPhrase) {
+  const ph = SQ.phrases[SQ.p], cur = ph.notes[SQ.i];
+  const clef = ph.hand === 'right' ? 'treble' : 'bass';
+  const fingerOf = n => (ph.list.find(x => C.midi(x.note) === C.midi(n)) || {}).finger || 0;
+  // Câu ngắn: vẽ cả câu; câu dài (leo thế tay): vẽ 5 nốt của thế tay
+  const shown = ph.notes.length <= 6 ? ph.notes.map((n, k) => ({ n, k })) : ph.list.map(x => ({ n: x.note, k: -1 }));
+  drawStaves($('#qsSheet'), [{ clef, items: shown.map(({ n, k }) => ({ note: n, finger: state.settings.finger ? fingerOf(n) : 0,
+    color: (k >= 0 ? k === SQ.i : cur && C.midi(n) === C.midi(cur)) ? '#e09a00' : (k >= 0 && k < SQ.i ? '#9fb4b6' : undefined) })) }], { minWidth: 300 });
   qsKb.clear();
-  list.forEach(x => qsKb.mark(C.id(x.note), C.midi(x.note) === C.midi(cur || x.note) && cur ? 'target' : 'hl', x.finger));
-  $('#qsNum').textContent = Math.min(i + 1, targets.length) + '/' + targets.length;
-  $('#qsBar').style.width = (i / targets.length * 100) + '%';
-  const f = list.find(x => cur && C.midi(x.note) === C.midi(cur));
-  $('#qsInfo').querySelector('b').textContent = cur ? 'Đánh ' + C.name(cur, 'vi') + (f && state.settings.finger ? ' · ngón ' + f.finger : '') : 'Xong!';
-  $('#qsInfo').querySelector('span').textContent = (SQ.mode === 'piano' ? 'App đang nghe đàn thật. ' : 'Bấm trên đàn ảo, hoặc chọn Đàn thật trong Luyện tự do để app nghe đàn. ') + 'Đi lên rồi đi xuống, 2 lượt.';
+  ph.list.forEach(x => qsKb.mark(C.id(x.note), cur && C.midi(x.note) === C.midi(cur) ? 'target' : 'hl', x.finger));
+  $('#qsNum').textContent = (SQ.phrases.length > 1 ? 'Câu ' + (SQ.p + 1) + '/' + SQ.phrases.length + ' · ' : '') + Math.min(SQ.done + 1, SQ.total) + '/' + SQ.total;
+  $('#qsBar').style.width = (SQ.done / SQ.total * 100) + '%';
+  const info = $('#qsInfo');
+  info.className = 'feedback' + (newPhrase && SQ.phrases.length > 1 ? ' swap' : '');
+  const first = ph.list.find(x => x.finger === 1);
+  info.querySelector('b').textContent = (newPhrase && SQ.phrases.length > 1 ? 'Đổi sang ' + ph.label + '! ' : '') + (cur ? 'Đánh ' + C.name(cur, 'vi') + (state.settings.finger ? ' · ngón ' + fingerOf(cur) : '') : '');
+  info.querySelector('span').textContent = (SQ.phrases.length > 1 ? ph.label + ': ngón cái (1) ở ' + C.name(first.note, 'vi') + '. ' : '') + (SQ.mode === 'piano' ? 'App đang nghe đàn thật. ' : 'Bấm trên đàn ảo. ') + (SQ.note || '');
+  if (newPhrase) requestAnimationFrame(() => qsKb.center(C.id(ph.list[2].note)));
 }
 function seqInput(m, n) {
   if (!SQ || current !== 'seq') { if (n) play(n); return; }
   if (n && SQ.mode === 'piano') { play(n); return; }
-  const cur = SQ.targets[SQ.i];
+  const ph = SQ.phrases[SQ.p], cur = ph.notes[SQ.i];
   if (!cur) return;
   if (m === C.midi(cur)) {
     if (SQ.mode !== 'piano') play(cur);
-    SQ.i++;
-    if (SQ.i >= SQ.targets.length) return finishSeq();
-    renderSeq();
+    SQ.i++; SQ.done++;
+    if (SQ.i >= ph.notes.length) { SQ.p++; SQ.i = 0; if (SQ.p >= SQ.phrases.length) return finishSeq(); return renderSeq(true); }
+    renderSeq(false);
   } else {
     SQ.errors++;
+    SQ.missed.push({ clef: ph.hand === 'right' ? 'treble' : 'bass', note: cur });
     if (n) play(n);
     const info = $('#qsInfo'); info.className = 'feedback no';
     info.querySelector('span').textContent = 'Trang vừa đánh ' + heardName(m) + '. Phím cần đánh đang sáng màu xanh.';
-    setTimeout(() => { if (SQ) { info.className = 'feedback'; } }, 1200);
+    setTimeout(() => { if (SQ) info.className = 'feedback'; }, 1200);
   }
 }
 function finishSeq() {
-  const { id, after, targets, errors } = SQ;
-  SQ = null; Mic.onNote = null;
-  const r = { score: Math.max(0, targets.length - errors), total: targets.length, missed: [] };
-  recordStep(id, true, r); markDay();
-  if (after.onFinish) after.onFinish(true);
-  showResult(r, { passed: true, passMsg: 'Xong "' + K.STEPS[id].title + '" ✓' + (errors ? ' · bấm nhầm ' + errors + ' lần' : ' · không nhầm lần nào'), again: () => runStep(id, after), next: after.next, back: after.back, backLabel: after.backLabel });
+  const { total, errors, onDone, missed } = SQ;
+  SQ = null; Mic.onNote = null; markDay();
+  const uniq = [...new Map(missed.map(q => [q.clef + C.id(q.note), q])).values()];
+  onDone({ score: Math.max(0, total - errors), total, missed: uniq });
 }
 
 /* ---------- Dòng bước học (dùng ở đảo và theo lớp) ---------- */
@@ -1889,11 +1968,12 @@ function renderClass() {
 function todayPlan() { const k = Plan.dayKey(); return state.today && state.today.date === k ? state.today : null; }
 function makePlan(min) {
   state.settings.minutes = min;
-  state.today = { date: Plan.dayKey(), minutes: min, tasks: Plan.buildPlan(min, { progress: state.progress, concepts: concepts(), classTopic: state.classTopic }) };
+  state.today = { date: Plan.dayKey(), minutes: min, tasks: Plan.buildPlan(min, { progress: state.progress, concepts: concepts(), classTopic: state.classTopic, today: Plan.dayKey() }) };
   save();
 }
 function taskTitle(t) {
   if (t.kind === 'review') return { title: 'Ôn nốt hay sai', sub: t.count + ' câu · khởi động', icon: '🔁' };
+  if (t.kind === 'game') return { title: GAMES[t.game].name, sub: 'Trò chơi', icon: GAMES[t.game].icon };
   if (t.kind === 'mix') return { title: t.track === 'class' ? 'Luyện tổng hợp bài trên lớp' : 'Ôn những gì đã học', sub: t.count + ' câu', icon: '🎯', tag: t.track };
   const st = K.STEPS[t.id];
   return { title: st.title, sub: ({ lesson: 'Bài học ngắn', drill: st.count + ' câu', sequence: 'Leo thế tay' })[st.type], icon: stepIcon(st.type), tag: t.track };
@@ -1915,6 +1995,7 @@ function runTask(idx) {
   };
   flowBack = 'today'; audio();
   if (t.kind === 'step') return runStep(t.id, after);
+  if (t.kind === 'game') return launchGame(t.game, after);
   const title = t.kind === 'review' ? 'Ôn nốt hay sai' : taskTitle(t).title;
   const pool = t.kind === 'review' ? reviewPoolNow(t.count) : t.pool.map(parseKey);
   startDrill({ title, pool, count: t.count, octave: pool.some(q => q.note.acc), onDone: r => { after.onFinish(); showResult(r, { again: () => runTask(idx), next: after.next, back: 'today', backLabel: 'Về nhiệm vụ' }); } });
@@ -1997,6 +2078,377 @@ async function askPersist() {
   try { if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch {}
 }
 
+/* =================== TRÒ CHƠI (GĐ4) =================== */
+const GAMES = {
+  plane: { name: 'Phi đội bắn nốt', icon: '✈️', sub: 'Máy bay mang nốt bay tới, đánh đúng nốt để bắn rơi', modes: true },
+  rain:  { name: 'Mưa nốt', icon: '🌧️', sub: 'Nốt rơi xuống, đánh đúng trước khi chạm vạch', modes: true },
+  lift:  { name: 'Thang máy', icon: '🛗', sub: 'Nốt lên xuống giữa hai khóa, đọc theo khoảng cách' },
+  swap:  { name: 'Đổi thế tay', icon: '✋', sub: 'Mỗi câu một thế tay: Đô, Sol, Rê' },
+  match: { name: 'Ghép đôi Đô–C', icon: '🃏', sub: 'Lật thẻ ghép tên Việt với tên chữ, chơi không cần đàn' },
+};
+const POOL_OPTS = {
+  hoc: 'Nốt đã học', sol: 'Khóa Sol', fa: 'Khóa Fa', hai: 'Cả hai khóa', phu: 'Có dòng kẻ phụ',
+};
+function gamePool(kind) {
+  const R = (clef, lo, hi) => C.notesInRange(lo, hi).map(n => ({ clef, note: n }));
+  if (kind === 'sol') return R('treble', 'E4', 'F5');
+  if (kind === 'fa') return R('bass', 'G2', 'A3');
+  if (kind === 'hai') return [...R('treble', 'E4', 'F5'), ...R('bass', 'G2', 'A3')];
+  if (kind === 'phu') return [...R('treble', 'A3', 'C6'), ...R('bass', 'C2', 'E4')];
+  const keys = new Set([...Plan.learnedPool(state.progress), ...Object.entries(state.srs).filter(([, v]) => v.seen >= 2).map(([k]) => k)]);
+  const out = [...keys].map(parseKey).filter(q => !q.note.acc || concepts().has('sharp'));
+  return out.length >= 6 ? out : [...R('treble', 'C4', 'G4'), ...R('bass', 'C3', 'G3')];
+}
+const gs = () => state.games || (state.games = { pool: 'hoc', input: state.setup.answer === 'piano' ? 'piano' : 'keys', best: {}, acc: {}, mode: {} });
+function hitMatch(m, note) {
+  const t = C.midi(note);
+  return m === t || (state.settings.grade === 'easy' && ((m - t) % 12 + 12) % 12 === 0);
+}
+function stars(pct) { return pct >= 0.9 ? 3 : pct >= 0.7 ? 2 : pct >= 0.4 ? 1 : 0; }
+function saveBest(game, st) { const g = gs(); g.best[game] = Math.max(g.best[game] || 0, st); save(); }
+function gameResult(game, r, extra = {}) {
+  const pct = r.total ? r.score / r.total : 0, st = stars(pct);
+  saveBest(game, st);
+  markDay();
+  const after = gameAfter; gameAfter = null;
+  if (after && after.onFinish) after.onFinish(true);
+  showResult(r, { passed: st >= 2, passMsg: '⭐'.repeat(st) + '☆'.repeat(3 - st) + '  ' + GAMES[game].name + (extra.msg ? ' · ' + extra.msg : ''),
+    again: () => launchGame(game, after), next: after && after.next, back: after ? after.back : 'games', backLabel: after ? after.backLabel : 'Về sảnh trò chơi' });
+}
+let gameAfter = null;
+function launchGame(game, after) {
+  gameAfter = after || null;
+  flowBack = after ? after.back : 'games';
+  audio();
+  const pool = gamePool(gs().pool);
+  if (game === 'plane' || game === 'rain') return startArena(game, pool);
+  if (game === 'lift') return startLift(pool);
+  if (game === 'swap') return startSwap();
+  if (game === 'match') return startMatch();
+}
+
+/* ---------- Sảnh trò chơi ---------- */
+function renderGames() {
+  const g = gs();
+  const box = $('#gmList'); box.replaceChildren();
+  Object.entries(GAMES).forEach(([id, G0]) => {
+    const card = document.createElement('div'); card.className = 'gcard';
+    const b = document.createElement('button'); b.className = 'steprun';
+    const ic = document.createElement('span'); ic.className = 'sic big'; ic.textContent = G0.icon;
+    const tx = document.createElement('span'); tx.className = 'stx';
+    const t = document.createElement('b'); t.textContent = G0.name;
+    const sub = document.createElement('small'); sub.textContent = G0.sub;
+    const st = document.createElement('small'); st.className = 'stars'; const best = g.best[id] || 0; st.textContent = '⭐'.repeat(best) + '☆'.repeat(3 - best);
+    tx.append(t, sub, st); b.append(ic, tx);
+    b.onclick = () => launchGame(id);
+    card.appendChild(b);
+    if (G0.modes) {
+      const seg = document.createElement('div'); seg.className = 'seg mini';
+      const unlocked = (g.acc[id] || 0) >= 0.9;
+      [['cho', 'Kiểu chờ'], ['chay', unlocked ? 'Kiểu chạy' : '🔒 Kiểu chạy']].forEach(([v, label]) => {
+        const sb = document.createElement('button'); sb.textContent = label; sb.setAttribute('aria-pressed', String((g.mode[id] || 'cho') === v));
+        sb.onclick = () => {
+          if (v === 'chay' && !unlocked) { $('#gmMsg').textContent = 'Kiểu chạy mở khi chơi kiểu chờ đúng từ 90%. Kỷ lục hiện tại: ' + Math.round((g.acc[id] || 0) * 100) + '%.'; return; }
+          g.mode[id] = v; save(); renderGames();
+        };
+        seg.appendChild(sb);
+      });
+      card.appendChild(seg);
+    }
+    box.appendChild(card);
+  });
+  $('#gmPoolInfo').textContent = gamePool(g.pool).length + ' nốt';
+}
+bindSeg('gpool', () => gs().pool, v => { gs().pool = v; renderGames(); });
+bindSeg('ginput', () => gs().input, v => { gs().input = v; });
+
+/* ---------- Đấu trường canvas: Phi đội bắn nốt & Mưa nốt ---------- */
+let AR = null, arKb = null;
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+function drawCard(ctx, cx, cy, clef, note, s, alpha = 1) {
+  const w = 11 * s, h = 13 * s, x = cx - w / 2, y = cy - h / 2;
+  ctx.save(); ctx.globalAlpha = alpha;
+  ctx.fillStyle = '#fffdf6'; ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, s); ctx.fill(); ctx.stroke();
+  const yp = p => cy - (p - 4) * s / 2;
+  ctx.strokeStyle = '#1c1c1c'; ctx.lineWidth = Math.max(1, s / 7);
+  for (let l = 0; l <= 8; l += 2) { ctx.beginPath(); ctx.moveTo(x + 0.5 * s, yp(l)); ctx.lineTo(x + w - 0.5 * s, yp(l)); ctx.stroke(); }
+  ctx.fillStyle = '#1c1c1c'; ctx.font = (4.2 * s) + 'px NhacSym';
+  if (clef === 'treble') ctx.fillText('\u{1D11E}', x + 0.6 * s, yp(2) + 1.0 * s);
+  else ctx.fillText('\u{1D122}', x + 0.7 * s, yp(6) + 3.2 * s);
+  const p = C.staffPos(note, clef), nx = cx + 2.2 * s, ny = yp(p);
+  C.ledgerLines(p).forEach(q => { ctx.beginPath(); ctx.moveTo(nx - 1.1 * s, yp(q)); ctx.lineTo(nx + 1.1 * s, yp(q)); ctx.stroke(); });
+  if (note.acc) { ctx.font = (2.3 * s) + 'px NhacSym'; ctx.fillText(note.acc > 0 ? '♯' : '♭', nx - 2.1 * s, ny + 0.38 * s); }
+  ctx.beginPath(); ctx.ellipse(nx, ny, 0.68 * s, 0.47 * s, -0.35, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function drawPlane(ctx, x, y, s, tint) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.fillStyle = tint; ctx.strokeStyle = 'rgba(0,0,0,.25)';
+  ctx.beginPath(); ctx.ellipse(0, 0, 4.2 * s, 1.1 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();       // thân
+  ctx.beginPath(); ctx.moveTo(-0.5 * s, 0); ctx.lineTo(1.6 * s, -2.6 * s); ctx.lineTo(2.4 * s, -2.6 * s); ctx.lineTo(1.4 * s, 0); ctx.fill(); // cánh trên
+  ctx.beginPath(); ctx.moveTo(-0.5 * s, 0.2 * s); ctx.lineTo(1.6 * s, 2.4 * s); ctx.lineTo(2.4 * s, 2.4 * s); ctx.lineTo(1.4 * s, 0.2 * s); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(3.4 * s, -0.4 * s); ctx.lineTo(4.4 * s, -1.9 * s); ctx.lineTo(4.9 * s, -1.9 * s); ctx.lineTo(4.4 * s, 0); ctx.fill(); // đuôi
+  ctx.fillStyle = '#bfe3f0'; ctx.beginPath(); ctx.ellipse(-2.6 * s, -0.25 * s, 0.9 * s, 0.45 * s, 0, 0, Math.PI * 2); ctx.fill(); // kính
+  ctx.restore();
+}
+function startArena(game, pool) {
+  const g = gs();
+  const mode = g.mode[game] === 'chay' && (g.acc[game] || 0) >= 0.9 ? 'chay' : 'cho';
+  AR = { game, mode, pool, ents: [], fx: [], t: 0, spawnT: 0, hits: 0, escaped: 0, wrong: 0, combo: 0, bestCombo: 0, score: 0,
+    shots: 0, total: mode === 'cho' ? 15 : 0, duration: mode === 'chay' ? 60 : 0, missed: new Map(), input: g.input, running: false, paused: false, msg: '', msgT: 0 };
+  $('#arTitle').textContent = GAMES[game].name + ' · ' + (mode === 'cho' ? 'kiểu chờ' : 'kiểu chạy');
+  if (!arKb) arKb = buildKeyboard($('#arKb'), n => { if (AR && AR.input !== 'piano') { play(n); arenaInput(C.midi(n)); } else play(n); });
+  arKb.labels('off');
+  go('arena', true);
+  (async () => {
+    if (AR.input === 'piano') { const r = await Mic.start(); if (!r.ok) AR.input = 'keys'; else { Mic.onNote = m => arenaInput(m); Mic.onFrame = null; } }
+    $('#arMic').hidden = AR.input !== 'piano';
+    try { await document.fonts.load('40px NhacSym'); } catch {}
+    if (!AR) return;
+    sizeArena(); AR.running = true; AR.last = performance.now();
+    requestAnimationFrame(arenaFrame);
+    arKb.center('C4');
+  })();
+}
+function sizeArena() {
+  const cv = $('#arCanvas'), box = cv.parentElement, dpr = window.devicePixelRatio || 1;
+  const w = box.clientWidth, h = Math.max(280, Math.min(window.innerHeight * 0.56, 520));
+  cv.width = w * dpr; cv.height = h * dpr; cv.style.height = h + 'px';
+  AR.W = w; AR.H = h; AR.dpr = dpr;
+  // thẻ nốt to nhất có thể nhưng vẫn đủ chỗ cho ít nhất 2 làn máy bay
+  AR.s = Math.max(7, Math.min(12, w / 34, (h * 0.84 - 4) / (8.2 + 6.5 + 14 + 6.5)));
+  const s = AR.s, top = 8.2 * s + 6.5 * s + 2, bottom = h * 0.84 - 6.5 * s - 4;
+  const n = Math.max(1, Math.min(3, Math.floor((bottom - top) / (14 * s)) + 1));
+  AR.lanes = Array.from({ length: n }, (_, i) => n === 1 ? (top + bottom) / 2 : top + (bottom - top) * i / (n - 1));
+  AR.colors = { sea: css('--sea'), sun: css('--sun'), good: css('--good'), bad: css('--bad'), ink: css('--ink'), bg: css('--surface-2') };
+}
+window.addEventListener('resize', () => { if (AR && current === 'arena') sizeArena(); });
+function arenaPick() {
+  const live = new Set(AR.ents.filter(e => e.state === 'live').map(e => C.midi(e.note)));
+  let q, guard = 0;
+  do { q = AR.pool[Math.floor(Math.random() * AR.pool.length)]; } while (live.has(C.midi(q.note)) && guard++ < 20);
+  return q;
+}
+function arenaSpawn() {
+  const q = arenaPick(), s = AR.s, W = AR.W, H = AR.H;
+  if (AR.game === 'plane') {
+    const lanes = AR.lanes;
+    const used = new Set(AR.ents.filter(e => e.state === 'live').map(e => e.lane));
+    const free = lanes.map((_, i) => i).filter(i => !used.has(i));
+    if (!free.length) return;
+    const lane = free[Math.floor(Math.random() * free.length)];
+    const speed = (W / 8) * (AR.mode === 'chay' ? 1 + Math.min(1, AR.t / 60) : 1);
+    AR.ents.push({ ...q, state: 'live', x: W + 8 * s, y: lanes[lane], lane, vx: -speed, born: AR.t });
+  } else {
+    const speed = H / (AR.mode === 'chay' ? Math.max(2.6, 5 - AR.t / 20) : 3.5);
+    AR.ents.push({ ...q, state: 'live', x: W / 2 + (Math.random() - 0.5) * W * 0.3, y: -7 * s, vy: speed, born: AR.t });
+  }
+}
+function arenaFrame(now) {
+  if (!AR || !AR.running) return;
+  const dt = Math.min(0.05, (now - AR.last) / 1000); AR.last = now;
+  if (!AR.paused && current === 'arena' && !document.hidden) arenaUpdate(dt);
+  if (!AR) return; // vừa kết thúc
+  arenaDraw();
+  if (AR && AR.running) requestAnimationFrame(arenaFrame);
+}
+function arenaUpdate(dt) {
+  const A = AR, s = A.s, W = A.W, H = A.H;
+  A.t += dt; A.spawnT -= dt; A.msgT -= dt;
+  const live = A.ents.filter(e => e.state === 'live');
+  const lineY = H * 0.8;
+  if (A.game === 'plane') {
+    const cap = Math.min(A.lanes.length, A.mode === 'cho' ? Math.min(2 + (A.hits >= 6 ? 1 : 0), A.total - A.hits) : 3);
+    if (live.length < cap && A.spawnT <= 0) { arenaSpawn(); A.spawnT = A.mode === 'cho' ? 1.4 : Math.max(1.2, 2.6 - A.t / 40); }
+    const stopX = 7 * s;
+    live.forEach(e => {
+      e.x += e.vx * dt;
+      if (A.mode === 'cho' && e.x < stopX + e.lane * 6 * s) e.x = stopX + e.lane * 6 * s;
+      if (A.mode === 'chay' && e.x < -7 * s) arenaEscape(e);
+    });
+  } else {
+    const active = live[0];
+    if (A.mode === 'cho') { if (!live.length && A.spawnT <= 0 && A.hits < A.total) arenaSpawn(); }
+    else if (A.spawnT <= 0) { arenaSpawn(); A.spawnT = Math.max(1.3, 2.6 - A.t / 30); }
+    live.forEach(e => {
+      e.y += e.vy * dt;
+      if (A.mode === 'cho' && e === active && e.y > lineY - 6.5 * s) e.y = lineY - 6.5 * s;
+      if (A.mode === 'cho' && e !== active && e.y > (active ? active.y - 14 * s : lineY)) e.y = active.y - 14 * s;
+      if (A.mode === 'chay' && e.y - 6.5 * s > lineY) arenaEscape(e);
+    });
+  }
+  A.fx = A.fx.filter(f => (f.t += dt) < f.life);
+  A.ents = A.ents.filter(e => e.state === 'live');
+  const done = A.mode === 'cho' ? A.hits >= A.total : A.t >= A.duration;
+  $('#arScore').textContent = (A.mode === 'cho' ? A.hits + '/' + A.total : Math.max(0, Math.ceil(A.duration - A.t)) + ' giây') + ' · ' + A.score + ' điểm' + (A.combo >= 3 ? ' · chuỗi ×' + A.combo : '');
+  if (done) arenaEnd();
+}
+function boom(e, good) {
+  const n = 14;
+  for (let i = 0; i < n; i++) {
+    const a = i / n * Math.PI * 2, v = 60 + Math.random() * 90;
+    AR.fx.push({ kind: 'p', x: e.x, y: e.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: 0, life: 0.7, col: good ? (i % 2 ? AR.colors.sun : '#ff7a3d') : '#9fb4b6' });
+  }
+}
+function floatText(x, y, text, col) { AR.fx.push({ kind: 't', x, y, text, col, t: 0, life: 1.4 }); }
+function arenaEscape(e) {
+  e.state = 'gone'; AR.escaped++; AR.combo = 0;
+  AR.missed.set(e.clef + C.id(e.note), { clef: e.clef, note: e.note });
+  Plan.srsUpdate(state.srs, e.clef + ':' + C.id(e.note), false, Plan.dayKey());
+  floatText(Math.max(40, Math.min(AR.W - 40, e.x)), AR.game === 'plane' ? e.y : AR.H * 0.8, 'Lọt: ' + C.name(e.note, 'vi') + ' ' + C.id(e.note).replace('#', '♯'), AR.colors.bad);
+}
+function arenaInput(m) {
+  const A = AR; if (!A || !A.running || current !== 'arena') return;
+  const live = A.ents.filter(e => e.state === 'live');
+  let target = null;
+  if (A.game === 'plane') target = live.filter(e => hitMatch(m, e.note)).sort((a, b) => a.x - b.x)[0] || null;
+  else target = live[0] && hitMatch(m, live[0].note) ? live[0] : null;
+  A.shots++;
+  if (target) {
+    target.state = 'hit'; A.hits++; A.combo++; A.bestCombo = Math.max(A.bestCombo, A.combo);
+    A.score += 10 + Math.min(10, A.combo - 1) * 2;
+    Plan.srsUpdate(state.srs, target.clef + ':' + C.id(target.note), true, Plan.dayKey());
+    boom(target, true);
+    if (A.game === 'rain' && A.mode === 'cho') A.spawnT = 0.35;
+    floatText(target.x, target.y - 4 * A.s, C.name(target.note, 'vi') + (A.combo >= 3 ? ' ×' + A.combo : ''), A.colors.good);
+  } else {
+    A.wrong++; A.combo = 0;
+    const n = midiToNote(m);
+    const aim = A.game === 'plane' ? live.sort((a, b) => a.x - b.x)[0] : live[0];
+    if (A.game === 'rain' && aim) A.missed.set(aim.clef + C.id(aim.note), { clef: aim.clef, note: aim.note });
+    floatText(aim ? aim.x : A.W / 2, (aim ? aim.y : A.H / 2) + 7.5 * A.s, 'Trượt: Trang đánh ' + C.name(n, 'vi') + ' ' + C.id(n).replace('#', '♯'), A.colors.bad);
+  }
+  save();
+}
+function arenaDraw() {
+  const A = AR, cv = $('#arCanvas'), ctx = cv.getContext('2d'), s = A.s, W = A.W, H = A.H;
+  ctx.setTransform(A.dpr, 0, 0, A.dpr, 0, 0);
+  // trời
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#bfe7f2'); sky.addColorStop(0.75, '#e9f7f4'); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+  if (A.game === 'plane') {
+    // biển + đảo bên trái
+    ctx.fillStyle = '#2f8fa0'; ctx.fillRect(0, H * 0.84, W, H * 0.16);
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    for (let x = 0; x < W; x += 24) { const yy = H * 0.84 + Math.sin(x / 18 + A.t * 2) * 2; ctx.fillRect(x, yy, 12, 2); }
+    ctx.fillStyle = '#e4cf98'; ctx.beginPath(); ctx.ellipse(0, H * 0.86, 5 * s, 3 * s, 0, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#3c9a5f'; ctx.beginPath(); ctx.ellipse(1.5 * s, H * 0.8, 3 * s, 2.2 * s, 0, Math.PI, 0); ctx.fill();
+    A.ents.forEach(e => { drawPlane(ctx, e.x, e.y - 8.2 * s, s * 0.9, '#f4f7f8'); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.moveTo(e.x, e.y - 7 * s); ctx.lineTo(e.x, e.y - 6.5 * s); ctx.stroke(); drawCard(ctx, e.x, e.y, e.clef, e.note, s); });
+  } else {
+    const lineY = H * 0.8;
+    ctx.strokeStyle = A.colors.bad; ctx.setLineDash([8, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, lineY); ctx.lineTo(W, lineY); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#2f8fa0'; ctx.fillRect(0, lineY + 2, W, H - lineY);
+    A.ents.forEach((e, i) => { drawCard(ctx, e.x, e.y, e.clef, e.note, s); if (i === 0) { ctx.strokeStyle = A.colors.sun; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(e.x - 5.7 * s, e.y - 6.7 * s, 11.4 * s, 13.4 * s, s); ctx.stroke(); } });
+  }
+  A.fx.forEach(f => {
+    const k = f.t / f.life;
+    if (f.kind === 'p') { ctx.globalAlpha = 1 - k; ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x + f.vx * f.t, f.y + f.vy * f.t + 80 * f.t * f.t, 4 * (1 - k) + 1, 0, Math.PI * 2); ctx.fill(); }
+    else { ctx.globalAlpha = 1 - k * k; ctx.fillStyle = f.col; ctx.font = '700 15px "Be Vietnam Pro", system-ui'; ctx.textAlign = 'center'; ctx.fillText(f.text, Math.max(90, Math.min(W - 90, f.x)), f.y - 30 * k); ctx.textAlign = 'start'; }
+    ctx.globalAlpha = 1;
+  });
+  if (A.paused) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.font = '700 22px "Be Vietnam Pro", system-ui'; ctx.textAlign = 'center'; ctx.fillText('Tạm dừng', W / 2, H / 2); ctx.textAlign = 'start'; }
+}
+function arenaEnd() {
+  const A = AR; A.running = false; AR = null; Mic.onNote = null;
+  const attempts = A.game === 'plane' && A.mode === 'cho' ? A.hits + A.wrong : A.hits + A.wrong + A.escaped;
+  const pct = attempts ? A.hits / attempts : 0;
+  const g = gs();
+  if (A.mode === 'cho') { g.acc[A.game] = Math.max(g.acc[A.game] || 0, pct); }
+  save();
+  const r = { score: A.hits, total: Math.max(attempts, A.hits), missed: [...A.missed.values()] };
+  gameResult(A.game, r, { msg: A.score + ' điểm · chuỗi dài nhất ' + A.bestCombo + (A.mode === 'cho' && pct >= 0.9 && (g.acc[A.game] || 0) >= 0.9 ? ' · đã mở Kiểu chạy!' : '') });
+}
+$('#arPause').onclick = () => { if (AR) { AR.paused = !AR.paused; $('#arPause').textContent = AR.paused ? 'Chơi tiếp' : 'Tạm dừng'; } };
+$('#arStop').onclick = () => { if (AR) arenaEnd(); };
+document.addEventListener('visibilitychange', () => { if (document.hidden && AR) { AR.paused = true; $('#arPause').textContent = 'Chơi tiếp'; } });
+
+/* ---------- Thang máy: khuông đôi, nốt đi lên xuống từng chút ---------- */
+function liftHint(prev, cur) {
+  const d = C.diatonic(cur.note) - C.diatonic(prev.note);
+  const cross = prev.clef !== cur.clef ? ' · sang ' + (cur.clef === 'treble' ? 'tầng trên (khóa Sol)' : 'tầng dưới (khóa Fa)') : '';
+  return d === 0 ? 'Đứng yên' + cross : (d > 0 ? '⬆ Lên ' : '⬇ Xuống ') + Math.abs(d) + ' bậc so với nốt mờ' + cross;
+}
+function startLift(pool) {
+  const sorted = [...new Map(pool.filter(q => !q.note.acc).map(q => [C.midi(q.note) + q.clef, q])).values()].sort((a, b) => C.diatonic(a.note) - C.diatonic(b.note) || (a.clef === 'bass' ? -1 : 1));
+  const seq = []; let i = Math.floor(sorted.length / 2);
+  for (let k = 0; k < 15; k++) {
+    seq.push(sorted[i]);
+    let j, guard = 0;
+    do { j = i + (Math.random() < 0.5 ? -1 : 1) * (1 + Math.floor(Math.random() * 3)); } while ((j < 0 || j >= sorted.length || j === i) && guard++ < 20);
+    i = Math.max(0, Math.min(sorted.length - 1, j));
+  }
+  startDrill({ title: 'Thang máy', pool: sorted, sequence: seq, grand: true, count: seq.length, octave: true, mode: gs().input,
+    onDone: r => gameResult('lift', r) });
+}
+
+/* ---------- Đổi thế tay ---------- */
+function startSwap() {
+  const kind = gs().pool;
+  const hands = kind === 'sol' ? ['right'] : kind === 'fa' ? ['left'] : ['right', 'left'];
+  const posKeys = ['do', 'sol', ...(concepts().has('sharp') ? ['re'] : [])];
+  const phrases = []; let last = '';
+  for (let k = 0; k < 6; k++) {
+    let pos, hand, key, guard = 0;
+    do { pos = posKeys[Math.floor(Math.random() * posKeys.length)]; hand = hands[k % hands.length]; key = pos + hand; } while (key === last && guard++ < 10);
+    last = key;
+    const list = C.handPosition(pos, hand);
+    const notes = []; let prev = -1;
+    for (let j = 0; j < 4; j++) { let x; do { x = Math.floor(Math.random() * 5); } while (x === prev); prev = x; notes.push(list[x].note); }
+    phrases.push(phraseOf(pos, hand, notes));
+  }
+  startPhrases({ title: 'Đổi thế tay', header: 'Trò chơi', phrases, mode: gs().input === 'piano' ? 'piano' : 'keys', note: 'Mỗi câu 4 nốt.', onDone: r => gameResult('swap', r) });
+}
+
+/* ---------- Ghép đôi ---------- */
+let MT = null;
+function startMatch() {
+  const level = gs().matchLevel || 'ten';
+  let pairs;
+  if (level === 'ten') {
+    const steps = [0, 1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5).slice(0, 6);
+    pairs = steps.map(st => { const n = { step: st, oct: 4, acc: 0 }; return [{ text: C.name(n, 'vi') }, { text: C.name(n, 'en') }]; });
+  } else {
+    const pool = [...new Map(gamePool(gs().pool).map(q => [C.id(q.note), q])).values()].sort(() => Math.random() - 0.5).slice(0, 6);
+    pairs = pool.map(q => [{ staff: q }, { text: C.name(q.note, 'vi') + ' ' + C.id(q.note).replace('#', '♯') }]);
+  }
+  const cards = pairs.flatMap((p, i) => p.map(c => ({ ...c, pair: i }))).sort(() => Math.random() - 0.5);
+  MT = { cards, open: [], matched: 0, moves: 0, start: performance.now(), level, lock: false };
+  const grid = $('#mtGrid'); grid.replaceChildren();
+  cards.forEach((c, i) => {
+    const b = document.createElement('button'); b.className = 'mcard'; b.dataset.i = i;
+    const face = document.createElement('div'); face.className = 'face';
+    if (c.staff) { drawStaves(face, [{ clef: c.staff.clef, items: [{ note: c.staff.note }] }], { minWidth: 110, step: 30, pad: 4 * 12 }); }
+    else face.textContent = c.text;
+    const back = document.createElement('div'); back.className = 'back'; back.textContent = '🌊';
+    b.append(face, back);
+    b.onclick = () => flipCard(i, b);
+    grid.appendChild(b);
+  });
+  $('#mtInfo').textContent = 'Lật 2 thẻ cùng cặp. ' + (level === 'ten' ? 'Ghép tên Việt với tên chữ.' : 'Ghép nốt trên khuông với tên nốt.');
+  go('match', true);
+}
+function flipCard(i, b) {
+  if (!MT || MT.lock || b.classList.contains('up')) return;
+  b.classList.add('up'); MT.open.push([i, b]);
+  if (MT.open.length < 2) return;
+  MT.moves++;
+  const [[i1, b1], [i2, b2]] = MT.open; MT.open = [];
+  if (MT.cards[i1].pair === MT.cards[i2].pair) {
+    b1.classList.add('ok'); b2.classList.add('ok'); MT.matched++;
+    const st = MT.cards[i1].staff || MT.cards[i2].staff; if (st) play(st.note);
+    if (MT.matched === 6) {
+      const sec = Math.round((performance.now() - MT.start) / 1000), moves = MT.moves; MT = null;
+      const score = Math.max(0, Math.min(6, 6 - Math.max(0, moves - 8) / 2));
+      setTimeout(() => gameResult('match', { score: Math.round(score), total: 6, missed: [] }, { msg: moves + ' lượt lật · ' + sec + ' giây' }), 500);
+    }
+  } else {
+    MT.lock = true;
+    setTimeout(() => { b1.classList.remove('up'); b2.classList.remove('up'); if (MT) MT.lock = false; }, 900);
+  }
+}
+bindSeg('mlevel', () => gs().matchLevel || 'ten', v => { gs().matchLevel = v; startMatch(); });
+
 /* ---------- Làm mới nhãn khi đổi cài đặt ---------- */
 function refreshLabels() {
   if (eKb) eKb.labels(state.settings.names);
@@ -2005,7 +2457,7 @@ function refreshLabels() {
 }
 
 // móc kiểm thử (chỉ đọc)
-window.__daonot = { get G() { return G; }, get SQ() { return SQ; }, get state() { return state; } };
+window.__daonot = { get G() { return G; }, get SQ() { return SQ; }, get AR() { return AR; }, get MT() { return MT; }, get state() { return state; } };
 renderSetupNote();
 askPersist();
 go('home');

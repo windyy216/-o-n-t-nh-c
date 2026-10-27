@@ -549,7 +549,7 @@ function setSession(t) { try { if (navigator.audioSession && navigator.audioSess
 let ac = null, master = null;
 function audio() {
   if (!ac) {
-    setSession('playback');
+    if (!(Mic.on || Mic.starting)) setSession('playback');
     ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createDynamicsCompressor();
     const g = ac.createGain(); g.gain.value = 0.9;
@@ -981,17 +981,19 @@ const Mic = {
       state.mic.result = 'không có'; state.mic.error = 'unsupported'; save(); return { ok: false, error: 'unsupported' };
     }
     try {
+      this.starting = true;
       setSession('play-and-record');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
       const a = audio();
-      const src = a.createMediaStreamSource(stream), an = a.createAnalyser();
-      an.fftSize = 4096; src.connect(an);
-      Object.assign(this, { stream, src, an, buf: new Float32Array(4096), on: true, L: Pitch.createListener() });
+      try { if (a.state !== 'running') await a.resume(); } catch {}
+      Object.assign(this, { stream, buf: new Float32Array(4096), on: true, starting: false, L: Pitch.createListener(), maxRms: 0, started: performance.now(), healed: false });
+      this.wire();
       this.timer = setInterval(() => this.tick(), 40);
       this.lock();
       state.mic.result = 'mở được'; delete state.mic.error; save();
       return { ok: true };
     } catch (err) {
+      this.starting = false;
       setSession('playback');
       state.mic.result = 'bị chặn'; state.mic.error = err.name; save();
       return { ok: false, error: err.name };
@@ -1006,9 +1008,31 @@ const Mic = {
     this.unlock(); setSession('playback');
     if (this.onFrame) this.onFrame(null);
   },
+  // Safari chỉ chạy các nút âm thanh có nối ra loa, nên nối thêm một nhánh câm (âm lượng 0) ra loa.
+  wire() {
+    try { if (this.src) this.src.disconnect(); if (this.sink) this.sink.disconnect(); } catch {}
+    const a = audio();
+    this.src = a.createMediaStreamSource(this.stream);
+    this.an = a.createAnalyser(); this.an.fftSize = 4096;
+    this.sink = a.createGain(); this.sink.gain.value = 0;
+    this.src.connect(this.an); this.an.connect(this.sink); this.sink.connect(a.destination);
+  },
+  // Nếu 1,5 giây đầu micro chỉ trả về im lặng tuyệt đối: dựng lại bộ âm thanh mới rồi nối lại.
+  async rebuild() {
+    this.healed = true; state.mic.healed = true; save();
+    try { await ac.close(); } catch {}
+    ac = null; master = null;
+    const a = audio();
+    try { await a.resume(); } catch {}
+    this.wire();
+  },
   tick() {
+    if (!this.an) return;
     this.an.getFloatTimeDomainData(this.buf);
     const fr = Pitch.detect(this.buf, ac.sampleRate);
+    this.maxRms = Math.max(this.maxRms, fr.rms);
+    state.mic.maxRms = Math.max(state.mic.maxRms || 0, fr.rms);
+    if (!this.healed && this.maxRms < 1e-6 && performance.now() - this.started > 1500) { this.rebuild(); return; }
     const m = this.L.feed(fr, performance.now() / 1000);
     if (this.onFrame) this.onFrame(fr);
     if (m !== null && this.onNote) this.onNote(m - (state.mic.calib.semis || 0), fr.f);
@@ -1154,7 +1178,7 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · GD2',
+    'Dao Not Nhac · GD2.1',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),
@@ -1162,6 +1186,8 @@ function renderMicReport() {
     'Loa khi micro mở: ' + ({ same: 'như nhau', quieter: 'nhỏ đi', silent: 'không nghe' }[m.loud] || 'chưa thử'),
     'Bỏ qua nút im lặng: ' + ('audioSession' in navigator ? 'có' : 'không'),
     'Giữ màn hình sáng: ' + ('wakeLock' in navigator ? 'có' : 'không'),
+    'Tín hiệu micro lớn nhất: ' + (m.maxRms ? m.maxRms.toFixed(4) : '0') + (m.healed ? ' · đã tự dựng lại âm thanh' : ''),
+    'Âm thanh: ' + (ac ? ac.state + ' · ' + ac.sampleRate + ' Hz' : 'chưa bật') + ' · phiên: ' + (navigator.audioSession ? navigator.audioSession.type : 'không có'),
     'Nốt nghe được lần cuối: ' + (m.lastNote || '—'),
     'Trình duyệt: ' + navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 120),
   ];

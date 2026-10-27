@@ -1967,6 +1967,7 @@ $('#bRestore').onclick = () => {
   $('#bRestore').textContent = 'Khôi phục'; $('#bIn').value = '';
   $('#bMsg').textContent = 'Đã khôi phục tiến độ.';
 };
+if (inFrame) $('#bFile').hidden = true; // khung xem của Claude không cho tải file
 async function askPersist() {
   try { if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch {}
 }

@@ -206,7 +206,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 3 · bản 3.1</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 3 · bản 3.2</small></h1>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
@@ -425,7 +425,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
       <button class="btn ghost" id="bRestore">Khôi phục</button>
       <div class="muted" id="bMsg" role="status"></div>
     </div>
-    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 3 · bản 3.1 · dữ liệu phiên bản 2</p>
+    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 3 · bản 3.2 · dữ liệu phiên bản 2</p>
   </section>
 </div>
 
@@ -682,7 +682,9 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
       'Sol khóa Sol: dòng kẻ 2 (khóa Sol cuộn quanh nó). Fa khóa Fa: dòng kẻ 4 (nằm giữa hai chấm của khóa Fa).',
       'Đô giữa: dòng kẻ phụ dưới khóa Sol, cũng là dòng kẻ phụ trên khóa Fa. Đô cao: khe 3 khóa Sol. Đô thấp: khe 2 khóa Fa.'],
       show: { grand: true, notes: ['F3', 'C3', 'C4', 'G4', 'C5'] } },
-    's2-lm-drill': { type: 'drill', title: 'Nhận nốt mốc', pool: [...T('C4', 'G4', 'C5'), ...B('C3', 'F3', 'C4')], count: 10, octave: true },
+    's2-lm-r': { type: 'drill', title: 'Nốt mốc · tay phải (khóa Sol)', pool: T('C4', 'G4', 'C5', 'C6'), count: 8, octave: true },
+    's2-lm-l': { type: 'drill', title: 'Nốt mốc · tay trái (khóa Fa)', pool: B('C2', 'C3', 'F3', 'C4'), count: 8, octave: true },
+    's2-lm-drill': { type: 'drill', title: 'Nốt mốc · hai tay xen kẽ', pool: [...T('C4', 'G4', 'C5'), ...B('C3', 'F3', 'C4')], count: 10, octave: true },
     's2-treble': { type: 'drill', title: 'Khóa Sol: trọn 5 dòng kẻ', pool: range('treble', 'E4', 'F5'), count: 15 },
     's2-bass': { type: 'drill', title: 'Khóa Fa: trọn 5 dòng kẻ', pool: range('bass', 'G2', 'A3'), count: 15 },
     's2-both': { type: 'drill', title: 'Hai tầng xen kẽ', pool: [...range('treble', 'E4', 'F5'), ...range('bass', 'G2', 'A3')], count: 20 },
@@ -693,7 +695,9 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
       'Đô giữa (C4) nằm trên dòng kẻ phụ thứ 1 dưới khóa Sol, và cũng là dòng kẻ phụ thứ 1 trên khóa Fa. Cùng một phím đàn, chỉ khác chỗ viết.',
       'Đếm dòng kẻ phụ như đếm dòng kẻ thường: dòng, khe, dòng, khe…'],
       show: { grand: true, notes: ['C4'] } },
-    's3-middle': { type: 'drill', title: 'Vùng giữa hai tầng', pool: [...T('A3', 'B3', 'C4', 'D4'), ...B('B3', 'C4', 'D4', 'E4')], count: 12, octave: true },
+    's3-middle-r': { type: 'drill', title: 'Vùng giữa · tay phải (khóa Sol)', pool: T('A3', 'B3', 'C4', 'D4', 'E4', 'F4'), count: 10, octave: true },
+    's3-middle-l': { type: 'drill', title: 'Vùng giữa · tay trái (khóa Fa)', pool: B('G3', 'A3', 'B3', 'C4', 'D4', 'E4'), count: 10, octave: true },
+    's3-middle': { type: 'drill', title: 'Vùng giữa · hai tay xen kẽ', pool: [...T('A3', 'B3', 'C4', 'D4'), ...B('B3', 'C4', 'D4', 'E4')], count: 12, octave: true },
     's3-treble': { type: 'drill', title: 'Gác mái khóa Sol', pool: range('treble', 'A3', 'C6'), count: 15, octave: true },
     's3-bass': { type: 'drill', title: 'Tầng hầm khóa Fa', pool: range('bass', 'C2', 'E4'), count: 15, octave: true },
     's3-intervals': { type: 'lesson', title: 'Đọc theo khoảng cách', body: [
@@ -726,8 +730,8 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
 
   const ISLANDS = [
     { id: 'i1', name: 'Đảo Năm Ngón', sub: 'Ra khỏi 5 ngón', steps: ['s1-names', 's1-do-read', 's1-do-seq', 's1-up', 's1-sol-lesson', 's1-sol-seq', 's1-mix', 's1-left-do-seq', 's1-left-do', 's1-left-sol'] },
-    { id: 'i2', name: 'Đảo Hai Tầng', sub: 'Khóa Sol và khóa Fa', steps: ['s2-rule', 's2-landmarks', 's2-lm-drill', 's2-treble', 's2-bass', 's2-both'] },
-    { id: 'i3', name: 'Đảo Gác Mái', sub: 'Dòng kẻ phụ', steps: ['s3-ledger', 's3-middle', 's3-treble', 's3-bass', 's3-intervals'] },
+    { id: 'i2', name: 'Đảo Hai Tầng', sub: 'Khóa Sol và khóa Fa', steps: ['s2-rule', 's2-landmarks', 's2-lm-r', 's2-lm-l', 's2-lm-drill', 's2-treble', 's2-bass', 's2-both'] },
+    { id: 'i3', name: 'Đảo Gác Mái', sub: 'Dòng kẻ phụ', steps: ['s3-ledger', 's3-middle-r', 's3-middle-l', 's3-middle', 's3-treble', 's3-bass', 's3-intervals'] },
     { id: 'i4', name: 'Đảo Nhịp', sub: 'Trường độ, nhịp 3/4 và 4/4', steps: ['s4-rhythm'], soon: 'GĐ5' },
     { id: 'i5', name: 'Đảo Hợp Âm', sub: 'Hợp âm và hai tay', steps: ['s5-chords'], soon: 'GĐ5' },
     { id: 'i6', name: 'Đảo Bài Lớn', sub: 'Dấu thăng, hóa biểu, thế Rê', steps: ['s6-sharp', 's6-fsharp', 's6-keysig', 's6-keysig-drill', 's6-re-seq-r', 's6-re-seq-l', 's6-flat'] },
@@ -735,7 +739,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
 
   // Nhánh Theo lớp: theo thứ tự sách. unlocks = khái niệm được mở khi lớp học tới.
   const CLASS_TOPICS = [
-    { id: 'c18', title: 'Đô giữa ở tay trái', book: 'Bài 18', steps: ['s3-ledger', 's3-middle', 's1-left-do'] },
+    { id: 'c18', title: 'Đô giữa ở tay trái', book: 'Bài 18', steps: ['s3-ledger', 's3-middle-r', 's3-middle-l', 's3-middle', 's1-left-do'] },
     { id: 'c19', title: 'Nốt trên dòng kẻ, quãng 6', book: 'Bài 19', steps: ['s2-rule', 's2-treble', 's2-bass', 's3-intervals'] },
     { id: 'c20', title: 'Nhịp 3/4, bản valse', book: 'Bài 20', steps: ['s4-rhythm'], soon: 'GĐ5' },
     { id: 'c21', title: 'Thế Sol, đổi ngón', book: 'Bài 21', steps: ['s1-sol-lesson', 's1-sol-seq', 's1-mix', 's1-left-sol'] },
@@ -1059,7 +1063,7 @@ function buildKeyboard(root, onPress) {
 const TITLES = { home: 'Đảo Nốt Nhạc', setup: 'Luyện tự do', game: 'Luyện đọc nốt', result: 'Kết quả', explore: 'Phím & khuông', hands: 'Thế tay', mic: 'Micro & hiệu chỉnh', settings: 'Cài đặt',
   today: 'Nhiệm vụ hôm nay', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
 const BACK = { setup: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
-const VERSION = 'Giai đoạn 3 · bản 3.1';
+const VERSION = 'Giai đoạn 3 · bản 3.2';
 let current = 'home';
 // inFlow = màn hình nằm trong một lượt tập (trò chơi, bài học, kết quả): nút quay lại về nơi bắt đầu lượt đó
 function go(v, inFlow) {
@@ -1653,7 +1657,7 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · ban 3.1',
+    'Dao Not Nhac · ban 3.2',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),

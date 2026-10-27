@@ -95,8 +95,8 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 /* Bàn phím */
 .kbwrap { overflow-x: auto; overscroll-behavior-x: contain; border-radius: 12px; border: 1px solid var(--line); background: #1b1b1b; scrollbar-width: thin; }
 .kb { position: relative; height: 150px; display: flex; padding: 0 2px 2px; }
-.key { position: relative; flex: 0 0 42px; height: 100%; margin-right: 2px; background: #fbfbf8; border-radius: 0 0 7px 7px; border: 0; cursor: pointer; padding: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 2px; padding-bottom: 8px; color: #333; touch-action: manipulation; }
-.key.black { position: absolute; top: 0; width: 28px; height: 92px; background: #1f1f1f; border-radius: 0 0 5px 5px; z-index: 2; color: #eee; padding-bottom: 6px; }
+.key { position: relative; flex: 0 0 var(--kw, 42px); height: 100%; margin-right: 2px; background: #fbfbf8; border-radius: 0 0 7px 7px; border: 0; cursor: pointer; padding: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 2px; padding-bottom: 8px; color: #333; touch-action: manipulation; }
+.key.black { position: absolute; top: 0; width: calc(var(--kw, 42px) * .66); height: 92px; background: #1f1f1f; border-radius: 0 0 5px 5px; z-index: 2; color: #eee; padding-bottom: 6px; }
 .key .kn { white-space: pre-line; font-size: 11px; font-weight: 700; line-height: 1.1; text-align: center; }
 .key .mid { width: 7px; height: 7px; border-radius: 50%; background: var(--sun); }
 .key .fg { position: absolute; top: 46%; width: 26px; height: 26px; border-radius: 50%; background: var(--sea); color: #fff; font-weight: 800; font-size: 14px; display: grid; place-items: center; }
@@ -106,7 +106,8 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 .key.hl { background: #cfeee9; }
 .key.black.hl { background: #2b6d66; }
 .key.ok { background: #b9ecd2; }
-.key.no { background: #ffc9c2; }
+.key.no { background: #ff9d92; box-shadow: inset 0 -6px 0 var(--bad); }
+.key.black.no { background: #b3392e; }
 .key.target { background: #b9ecd2; box-shadow: inset 0 -6px 0 var(--good); }
 
 /* Trò chơi */
@@ -205,7 +206,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 3 · bản 3.0</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 3 · bản 3.1</small></h1>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
@@ -424,7 +425,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
       <button class="btn ghost" id="bRestore">Khôi phục</button>
       <div class="muted" id="bMsg" role="status"></div>
     </div>
-    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 3 · bản 3.0 · dữ liệu phiên bản 2</p>
+    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 3 · bản 3.1 · dữ liệu phiên bản 2</p>
   </section>
 </div>
 
@@ -996,6 +997,8 @@ function drawStaves(container, staves, opts = {}) {
 
 /* ---------- Bàn phím ảo ---------- */
 const KB_LOW = C.parse('C2'), KB_HIGH = C.parse('C6');
+// Phím hẹp hơn trên điện thoại để nhìn được trọn hơn một quãng tám (Đô tới Đô cao) cùng lúc
+const KW = Math.max(34, Math.min(42, Math.floor((Math.min(window.innerWidth, 760) - 40) / 10)));
 function buildKeyboard(root, onPress) {
   root.replaceChildren();
   const keys = new Map();
@@ -1013,13 +1016,14 @@ function buildKeyboard(root, onPress) {
       const bn = { step: n.step, oct: n.oct, acc: 1 };
       const b = document.createElement('button');
       b.className = 'key black'; b.dataset.id = C.id(bn); b.setAttribute('aria-label', C.name(bn, 'both', true));
-      b.style.left = (2 + (whiteIndex + 1) * 44 - 15) + 'px';
+      b.style.left = (2 + (whiteIndex + 1) * (KW + 2) - Math.round(KW * 0.33) - 1) + 'px';
       const bl = document.createElement('span'); bl.className = 'kn'; b.appendChild(bl);
       root.appendChild(b); keys.set(C.id(bn), { el: b, note: bn });
     }
     whiteIndex++;
   }
-  root.style.width = (4 + whiteIndex * 44) + 'px';
+  root.style.width = (4 + whiteIndex * (KW + 2)) + 'px';
+  root.style.setProperty('--kw', KW + 'px');
   root.addEventListener('pointerdown', e => {
     const k = e.target.closest('.key'); if (!k) return;
     e.preventDefault();
@@ -1033,14 +1037,21 @@ function buildKeyboard(root, onPress) {
     labels(mode) {
       keys.forEach(({ el, note }) => {
         const kn = el.querySelector('.kn');
-        if (mode === 'off' || note.acc) { kn.textContent = ''; return; }
+        if (note.acc) { kn.textContent = ''; return; }
+        if (mode === 'off') { kn.textContent = note.step === 0 ? 'C' + note.oct : ''; return; }
         kn.textContent = mode === 'both' ? C.name(note, 'vi') + '\n' + C.name(note, 'en') + note.oct
           : mode === 'en' ? C.name(note, 'en') + note.oct : C.name(note, 'vi');
       });
     },
     clear() { keys.forEach(({ el }) => { el.classList.remove('hl', 'ok', 'no', 'target'); el.querySelector('.fg')?.remove(); }); },
     mark(id, cls, finger) { const k = keys.get(id); if (!k) return; k.el.classList.add(cls); if (finger && state.settings.finger) { const f = document.createElement('span'); f.className = 'fg'; f.textContent = finger; k.el.appendChild(f); } },
-    center(id) { const k = keys.get(id); if (!k) return; const w = root.parentElement; w.scrollLeft = k.el.offsetLeft - w.clientWidth / 2 + 21; },
+    center(id, id2) {
+      const k = keys.get(id); if (!k) return; const w = root.parentElement;
+      let x = k.el.offsetLeft + KW / 2;
+      const k2 = id2 && keys.get(id2);
+      if (k2) { const x2 = k2.el.offsetLeft + KW / 2; if (Math.abs(x2 - x) < w.clientWidth - KW) x = (x + x2) / 2; }
+      w.scrollLeft = x - w.clientWidth / 2;
+    },
   };
 }
 
@@ -1048,7 +1059,7 @@ function buildKeyboard(root, onPress) {
 const TITLES = { home: 'Đảo Nốt Nhạc', setup: 'Luyện tự do', game: 'Luyện đọc nốt', result: 'Kết quả', explore: 'Phím & khuông', hands: 'Thế tay', mic: 'Micro & hiệu chỉnh', settings: 'Cài đặt',
   today: 'Nhiệm vụ hôm nay', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
 const BACK = { setup: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
-const VERSION = 'Giai đoạn 3 · bản 3.0';
+const VERSION = 'Giai đoạn 3 · bản 3.1';
 let current = 'home';
 // inFlow = màn hình nằm trong một lượt tập (trò chơi, bài học, kết quả): nút quay lại về nơi bắt đầu lượt đó
 function go(v, inFlow) {
@@ -1254,8 +1265,18 @@ function answerStep(o, btn) {
 function answerKey(n) {
   if (!G || G.locked || current !== 'game') { play(n); return; }
   if (G.mode !== 'keys') { play(n); return; }
-  const ok = C.midi(n) === C.midi(G.q.note);
-  resolve(ok, () => gKb.mark(C.id(n), ok ? 'ok' : 'no'), n);
+  const m = C.midi(n), target = C.midi(G.q.note);
+  const ok = m === target, sameName = n.step === G.q.note.step && n.acc === G.q.note.acc;
+  if (!ok && sameName && !G.octaveWarned) {
+    G.octaveWarned = true; play(n);
+    gKb.clear(); gKb.mark(C.id(n), 'no');
+    const fb = $('#gFeedback'); fb.className = 'feedback';
+    fb.querySelector('b').textContent = 'Đúng tên rồi, nhưng sai quãng tám';
+    $('#gHint').textContent = 'Trang bấm ' + C.name(n, 'vi') + ' ' + C.id(n).replace('#', '♯') + ', ' + (m < target ? 'thấp' : 'cao') + ' hơn ' + Math.round(Math.abs(m - target) / 12) + ' quãng tám. Nhìn mốc C4 (chấm vàng) trên đàn ảo rồi bấm lại.';
+    gKb.center(C.id(n), 'C4');
+    return;
+  }
+  resolve(ok, () => gKb.mark(C.id(n), ok ? 'ok' : 'no'), n, ok ? null : C.name(n, 'vi') + ' (' + C.id(n).replace('#', '♯') + ')');
 }
 function resolve(ok, markFn, pressed, heardText) {
   G.locked = true; markFn();
@@ -1283,13 +1304,13 @@ function resolve(ok, markFn, pressed, heardText) {
     if (coveredByKey(n, G.keySig)) hint = 'Nhìn đầu khuông: hóa biểu có dấu thăng ở ' + C.SOLFEGE[n.step] + ', nên nốt ' + C.SOLFEGE[n.step] + ' nào cũng thăng. ' + hint;
     if (lm.steps === 0) hint += 'Đây chính là nốt mốc ' + C.name(lm.landmark, 'vi') + ' (' + C.id(lm.landmark) + ').';
     else hint += 'Mẹo: từ nốt mốc ' + C.name(lm.landmark, 'vi') + ' (' + C.id(lm.landmark) + ') ' + (lm.steps > 0 ? 'đếm lên ' : 'đếm xuống ') + Math.abs(lm.steps) + ' bậc.';
-    if (heardText) hint = 'Trang vừa đánh ' + heardText + '. ' + hint;
+    if (heardText) hint = 'Trang vừa ' + (G.mode === 'keys' ? 'bấm ' : 'đánh ') + heardText + ' (phím màu đỏ). Phím đúng màu xanh. ' + hint;
     if (G.mode === 'piano') { hint += ' Đánh lại đúng nốt trên đàn để sang câu tiếp.'; G.awaitFix = true; }
     $('#gHint').textContent = hint;
     drawQ({ note: n, color: '#cc3f33', label: C.name(n, state.settings.names === 'off' ? 'vi' : state.settings.names) });
     $$('#gAnswers button').forEach(b => { if (+b.dataset.step === n.step && +b.dataset.acc === n.acc) b.classList.add('ok'); });
     gKb.mark(C.id(n), 'target');
-    gKb.center(C.id(n));
+    gKb.center(C.id(n), pressed ? C.id(pressed) : null);
     G.missed.set(key, G.q);
     if (!G.q.retried) G.queue.push({ q: { ...G.q, retried: true }, at: G.i + 3 });
     G.i++;
@@ -1632,7 +1653,7 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · ban 3.0',
+    'Dao Not Nhac · ban 3.1',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),

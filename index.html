@@ -135,7 +135,8 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 .chip.off { border-color: var(--bad); }
 .heard { font-size: 18px; }
 .heard b { font-family: var(--f-display); font-size: 28px; }
-.meter { height: 16px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.meter { position: relative; height: 16px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.meter .thr { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--sun); }
 .meter i { display: block; height: 100%; width: 0; background: var(--good); transition: width .08s; }
 .status { padding: 12px 14px; border-radius: 12px; background: var(--surface-2); }
 .status.ok { background: color-mix(in srgb, var(--good) 18%, var(--surface)); }
@@ -170,7 +171,7 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 2 · bản 2.4</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 2 · bản 2.5</small></h1>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
@@ -262,9 +263,12 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
       <h3>1 · Mở micro</h3>
       <div class="status" id="mStatus">Micro đang tắt.</div>
       <button class="btn" id="mStart">Mở micro</button>
+      <div class="label">Độ nhạy micro</div>
+      <div class="seg" data-opt="sens"><button data-v="vua">Vừa</button><button data-v="cao">Cao</button><button data-v="ratcao">Rất cao · đánh nhẹ</button></div>
+      <p class="muted" style="margin:0">Đánh nhẹ mà app không nghe thì chọn Rất cao. Nếu app tự báo nốt khi Trang chưa đánh (do tiếng ồn), hạ xuống một mức. Vạch trên thanh độ to là mức app bắt đầu nghe.</p>
       <div id="mLive" hidden style="flex-direction:column;gap:8px">
         <div class="label">Độ to</div>
-        <div class="meter"><i id="mMeter"></i></div>
+        <div class="meter"><i id="mMeter"></i><b class="thr" id="mThr"></b></div>
         <div class="heard">Vừa nghe: <b id="mNote">—</b></div>
       </div>
     </div>
@@ -493,7 +497,7 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 
   // Theo dõi nốt: gọi feed() mỗi khung (~40ms). Trả về số MIDI khi có nốt MỚI được bấm, ngược lại null.
   function createListener(opt = {}) {
-    const st = { held: null, cand: null, candN: 0, floor: 0.01, minSince: 1, gateUntil: 0, lastRms: 0 };
+    const st = { held: null, cand: null, candN: 0, floor: opt.minRms || 0.004, minSince: 1, gateUntil: 0, lastRms: 0 };
     const need = opt.stableFrames || 2;
     const minClarity = opt.minClarity || 0.8;
     return {
@@ -503,7 +507,7 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
       feed(fr, now) {
         // ước lượng tiếng ồn nền (chậm đi lên, nhanh đi xuống)
         st.floor = fr.rms < st.floor ? fr.rms * 0.5 + st.floor * 0.5 : st.floor * 0.995 + fr.rms * 0.005;
-        const active = fr.rms > Math.max(opt.minRms || 0.006, st.floor * 2.5);
+        const active = fr.rms > Math.max(opt.minRms || 0.006, st.floor * (opt.floorMul || 2.5));
         const attack = st.lastRms > 0 && fr.rms > st.lastRms * 1.6 && fr.rms > st.minSince * 2.2;
         st.lastRms = fr.rms;
         if (now < st.gateUntil) { st.cand = null; st.candN = 0; st.minSince = Math.min(st.minSince, fr.rms); return null; }
@@ -534,7 +538,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 
 /* ---------- Lưu trữ (có số phiên bản) ---------- */
 const STORE_KEY = 'daonot';
-const DEFAULTS = { schema: 1, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause: true },
+const DEFAULTS = { schema: 1, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause: true, sens: 'cao' },
   setup: { clef: 'treble', range: 'inside', answer: 'names', count: '10' },
   hands: { pos: 'do', hand: 'right' }, stats: { notes: {} }, mic: { calib: { semis: 0 } } };
 function migrate(d) {
@@ -699,7 +703,7 @@ function go(v) {
   $$('.view').forEach(s => { s.hidden = s.id !== 'v-' + v; s.style.display = s.hidden ? 'none' : 'flex'; });
   $('#backBtn').hidden = v === 'home';
   $('#title').firstChild.textContent = TITLES[v];
-  $('#subtitle').textContent = v === 'home' ? 'Giai đoạn 2 · bản 2.4' : '';
+  $('#subtitle').textContent = v === 'home' ? 'Giai đoạn 2 · bản 2.5' : '';
   $('#settingsBtn').hidden = v === 'settings';
   if (v === 'explore') initExplore();
   if (v === 'hands') renderHands();
@@ -719,6 +723,7 @@ function bindSeg(opt, get, set) {
   sync();
 }
 ['clef', 'range', 'answer', 'count'].forEach(k => bindSeg(k, () => state.setup[k], v => { state.setup[k] = v; if (k === 'answer') renderSetupNote(); }));
+bindSeg('sens', () => state.settings.sens, v => { state.settings.sens = v; if (Mic.on) { Mic.stop(); ensureMic(); } else renderThr(); renderMicReport(); });
 bindSeg('grade', () => state.settings.grade, v => { state.settings.grade = v; });
 bindSeg('names', () => state.settings.names, v => { state.settings.names = v; refreshLabels(); });
 bindSeg('pos', () => state.hands.pos, v => { state.hands.pos = v; renderHands(); });
@@ -980,6 +985,13 @@ function finish() {
 
 /* ---------- MICRO: bộ nghe dùng chung ---------- */
 const inFrame = (() => { try { return window.self !== window.top; } catch { return true; } })();
+// Độ nhạy micro: ngưỡng âm lượng tối thiểu để tính là có tiếng đàn
+const SENS = {
+  vua:    { detect: { minRms: 0.004 }, listen: { minRms: 0.006, floorMul: 2.5 }, agc: false, label: 'Vừa' },
+  cao:    { detect: { minRms: 0.002 }, listen: { minRms: 0.003, floorMul: 2.2 }, agc: false, label: 'Cao' },
+  ratcao: { detect: { minRms: 0.001 }, listen: { minRms: 0.0015, floorMul: 2.0, minClarity: 0.75 }, agc: true, label: 'Rất cao' },
+};
+const sens = () => SENS[state.settings.sens] || SENS.cao;
 const Mic = {
   on: false, onNote: null, onFrame: null, wake: null,
   async start() {
@@ -990,10 +1002,10 @@ const Mic = {
     try {
       this.starting = true;
       setSession('play-and-record');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: sens().agc } });
       const a = audio();
       try { if (a.state !== 'running') await a.resume(); } catch {}
-      Object.assign(this, { stream, buf: new Float32Array(4096), on: true, starting: false, L: Pitch.createListener(), maxRms: 0, started: performance.now(), healed: false });
+      Object.assign(this, { stream, buf: new Float32Array(4096), on: true, starting: false, L: Pitch.createListener(sens().listen), maxRms: 0, started: performance.now(), healed: false });
       this.wire();
       this.timer = setInterval(() => this.tick(), 40);
       this.lock();
@@ -1026,7 +1038,7 @@ const Mic = {
     if (!this.on || !this.paused) return;
     try {
       setSession('play-and-record');
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: sens().agc } });
       this.paused = false; this.resumeAt = 0;
       this.wire();
       this.L.reset(); this.L.gate(performance.now() / 1000 + 0.2);
@@ -1068,7 +1080,7 @@ const Mic = {
   tick() {
     if (!this.an) return;
     this.an.getFloatTimeDomainData(this.buf);
-    const fr = Pitch.detect(this.buf, ac.sampleRate);
+    const fr = Pitch.detect(this.buf, ac.sampleRate, sens().detect);
     this.maxRms = Math.max(this.maxRms, fr.rms);
     state.mic.maxRms = Math.max(state.mic.maxRms || 0, fr.rms);
     if (!this.healed && this.maxRms < 1e-6 && performance.now() - this.started > 1500) { this.rebuild(); return; }
@@ -1095,7 +1107,7 @@ function renderHomeBanner() {
 /* ---------- MÀN HÌNH MICRO & HIỆU CHỈNH ---------- */
 let calib = null, micTest = null;
 function enterMic() {
-  syncMicUi(); renderCalib(); renderTestResult(); renderMicReport();
+  renderThr(); syncMicUi(); renderCalib(); renderTestResult(); renderMicReport();
   Mic.onNote = micNote; Mic.onFrame = micFrame;
 }
 function syncMicUi() {
@@ -1117,9 +1129,12 @@ async function ensureMic() {
   return r.ok;
 }
 $('#mStart').onclick = async () => { if (Mic.on) { Mic.stop(); syncMicUi(); } else await ensureMic(); };
+// Thanh độ to dùng thang căn bậc hai để tiếng nhỏ vẫn thấy rõ
+const meterPct = r => Math.min(100, Math.sqrt(r / 0.08) * 100);
+function renderThr() { const t = $('#mThr'); if (t) t.style.left = meterPct(sens().listen.minRms) + '%'; }
 function micFrame(fr) {
   if (!fr) { syncMicUi(); return; }
-  $('#mMeter').style.width = Math.min(100, fr.rms * 400) + '%';
+  $('#mMeter').style.width = meterPct(fr.rms) + '%';
 }
 function micNote(m, f) {
   const label = heardName(m);
@@ -1217,11 +1232,12 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · ban 2.4',
+    'Dao Not Nhac · ban 2.5',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),
     'Bài test: ' + (m.test ? m.test.score + '/' + m.test.total + (m.test.miss.length ? ' · lệch: ' + m.test.miss.join(', ') : '') : 'chưa làm'),
+    'Độ nhạy: ' + sens().label,
     'Tạm tắt micro khi phát: ' + (state.settings.micPause !== false ? 'có' : 'không') + ' · lần thử loa: bản 2.4',
     'Loa khi micro mở: ' + ({ same: 'như nhau', quieter: 'nhỏ đi', silent: 'không nghe' }[m.loud] || 'chưa thử'),
     'Bỏ qua nút im lặng: ' + ('audioSession' in navigator ? 'có' : 'không'),

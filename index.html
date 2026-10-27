@@ -170,7 +170,7 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Bản thử · Giai đoạn 2</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 2 · bản 2.3</small></h1>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
@@ -695,7 +695,7 @@ function go(v) {
   $$('.view').forEach(s => { s.hidden = s.id !== 'v-' + v; s.style.display = s.hidden ? 'none' : 'flex'; });
   $('#backBtn').hidden = v === 'home';
   $('#title').firstChild.textContent = TITLES[v];
-  $('#subtitle').textContent = v === 'home' ? 'Bản thử · Giai đoạn 2' : '';
+  $('#subtitle').textContent = v === 'home' ? 'Giai đoạn 2 · bản 2.3' : '';
   $('#settingsBtn').hidden = v === 'settings';
   if (v === 'explore') initExplore();
   if (v === 'hands') renderHands();
@@ -1181,7 +1181,7 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · GD2.1',
+    'Dao Not Nhac · ban 2.3',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),

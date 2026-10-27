@@ -135,6 +135,40 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 .chip.off { border-color: var(--bad); }
 .heard { font-size: 18px; }
 .heard b { font-family: var(--f-display); font-size: 28px; }
+.streak { font-weight: 700; font-size: 15px; }
+.streak.big2 { font-family: var(--f-display); font-size: 22px; }
+.lagoon .streak { opacity: .95; }
+.steps { display: flex; flex-direction: column; gap: 8px; }
+.step { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 4px 8px 4px 4px; }
+.step.done { background: color-mix(in srgb, var(--good) 10%, var(--surface)); }
+.step.soon, .step.concept { opacity: .7; }
+.steprun { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; background: none; border: 0; text-align: left; padding: 10px 6px; cursor: pointer; min-height: 56px; }
+.steprun:disabled { cursor: default; }
+.sic { width: 38px; height: 38px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); font-size: 18px; }
+.step.done .sic { background: var(--good); color: #fff; font-weight: 800; }
+.stx { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.stx b { font-size: 16px; line-height: 1.25; }
+.stx small { color: var(--muted); font-size: 13px; }
+.btn.small { min-height: 36px; padding: 6px 12px; font-size: 14px; }
+.islands { display: flex; flex-direction: column; gap: 12px; position: relative; }
+.isl { display: flex; align-items: center; gap: 14px; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 20px; padding: 14px; cursor: pointer; }
+.isl:nth-child(even) { margin-left: 28px; }
+.isl:nth-child(odd) { margin-right: 28px; }
+.isl.soon { opacity: .65; }
+.islnum { width: 52px; height: 52px; flex: none; border-radius: 50% 50% 46% 54% / 60% 55% 45% 40%; background: var(--sea); color: var(--sea-ink); display: grid; place-items: center; font-family: var(--f-display); font-size: 24px; font-weight: 800; box-shadow: inset 0 -6px 0 rgba(0,0,0,.12); }
+.isl.full .islnum { background: var(--good); }
+.isl .stx { flex: 1; }
+.pbar { display: block; height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-top: 6px; }
+.pbar i { display: block; height: 100%; background: var(--sun); }
+.topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.topic { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.topic small { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
+.topic b { font-size: 14px; line-height: 1.3; }
+.topic[aria-pressed="true"] { background: var(--sea); color: var(--sea-ink); border-color: var(--sea); }
+.topic[aria-pressed="true"] small { color: inherit; opacity: .85; }
+.lesson p { margin: 0; max-width: 62ch; }
+.lesson #lBody { display: flex; flex-direction: column; gap: 10px; }
+textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, Menlo, monospace; font-size: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); padding: 10px; resize: vertical; }
 .meter { position: relative; height: 16px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
 .meter .thr { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--sun); }
 .meter i { display: block; height: 100%; width: 0; background: var(--good); transition: width .08s; }
@@ -171,19 +205,16 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 2 · bản 2.5</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 3 · bản 3.0</small></h1>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
   <!-- MÀN HÌNH CHÍNH -->
   <section id="v-home" class="view" style="display:flex;flex-direction:column;gap:16px">
     <div class="lagoon">
-      <h2>Ra khơi luyện nốt</h2>
-      <p>Sáu hòn đảo đang chờ. Bản đồ và lộ trình mở ở giai đoạn 3; bây giờ luyện đọc nốt trước.</p>
-      <div class="isles" aria-label="Sáu hòn đảo">
-        <span class="isle">1 · Ra khỏi 5 ngón</span><span class="isle">2 · Nhà 2 tầng</span><span class="isle">3 · Gác mái</span>
-        <span class="isle">4 · Nhịp</span><span class="isle">5 · Hợp âm</span><span class="isle">6 · Bài lớn</span>
-      </div>
+      <h2>Nhiệm vụ hôm nay</h2>
+      <p id="hToday"></p>
+      <div class="row" style="margin-top:14px;gap:12px"><button class="btn sun" data-go="today">Ra khơi →</button><span class="streak" id="hStreak"></span></div>
       <svg class="waves" viewBox="0 0 400 64" preserveAspectRatio="none" aria-hidden="true">
         <path d="M0 30 Q 25 18 50 30 T 100 30 T 150 30 T 200 30 T 250 30 T 300 30 T 350 30 T 400 30 V64 H0Z" fill="rgba(255,255,255,.14)"/>
         <path d="M0 44 Q 25 34 50 44 T 100 44 T 150 44 T 200 44 T 250 44 T 300 44 T 350 44 T 400 44 V64 H0Z" fill="rgba(255,255,255,.22)"/>
@@ -191,12 +222,72 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
     </div>
     <div class="status" id="homeBanner" hidden></div>
     <div class="menu">
-      <button class="tile main" data-go="setup"><span class="ic">🎯</span><div><b>Gọi tên nốt</b><br><span>Nhìn nốt trên khuông, gọi đúng tên hoặc bấm đúng phím</span></div></button>
-      <button class="tile" data-go="explore"><span class="ic">🎹</span><b>Phím & khuông</b><span>Bấm phím nào, thấy ngay nốt đó nằm đâu ở cả hai khóa</span></button>
+      <button class="tile main" data-go="map"><span class="ic">🏝️</span><div><b>Bản đồ 6 đảo</b><br><span>Lộ trình chính, đi từng bước</span></div></button>
+      <button class="tile" data-go="class"><span class="ic">🎒</span><b>Theo lớp</b><span id="hClassSub"></span></button>
+      <button class="tile" data-go="setup"><span class="ic">🎯</span><b>Luyện tự do</b><span id="hWeak">Gọi tên nốt, chọn khóa và vùng nốt</span></button>
+      <button class="tile" data-go="explore"><span class="ic">🎹</span><b>Phím & khuông</b><span>Bấm phím nào, thấy ngay nốt đó ở cả hai khóa</span></button>
       <button class="tile" data-go="hands"><span class="ic">✋</span><b>Thế tay</b><span>Thế Đô, Sol, Rê · số ngón 1–5</span></button>
-      <button class="tile" data-go="mic"><span class="ic">🎙️</span><b>Micro & hiệu chỉnh</b><span>Mở micro, hiệu chỉnh đàn, bài test 12 nốt</span></button>
-      <button class="tile" data-go="settings"><span class="ic">⚙️</span><b>Cài đặt</b><span>Tên nốt, số ngón, âm thanh</span></button>
+      <button class="tile" data-go="mic"><span class="ic">🎙️</span><b>Micro & hiệu chỉnh</b><span>Mở micro, độ nhạy, bài test 12 nốt</span></button>
+      <button class="tile" data-go="settings"><span class="ic">⚙️</span><b>Cài đặt</b><span>Tên nốt, số ngón, sao lưu tiến độ</span></button>
     </div>
+  </section>
+
+  <!-- NHIỆM VỤ HÔM NAY -->
+  <section id="v-today" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="card">
+      <div class="streak big2" id="tdStreak"></div>
+      <div class="muted" id="tdClass"></div>
+    </div>
+    <div class="card" id="tdPick">
+      <h3>Hôm nay Trang tập bao lâu?</h3>
+      <div class="seg" data-opt="minutes"><button data-v="5">5 phút</button><button data-v="10">10 phút</button><button data-v="20">20 phút</button><button data-v="30">30 phút</button></div>
+      <p class="muted" style="margin:0">5 phút: chỉ ôn nốt hay sai. Từ 10 phút: nửa luyện bài trên lớp, nửa đi tiếp lộ trình.</p>
+      <button class="btn sun wide" id="tdMake">Xếp nhiệm vụ</button>
+    </div>
+    <div id="tdPlan" style="display:flex;flex-direction:column;gap:10px">
+      <div class="row" style="justify-content:space-between"><span class="label" id="tdMin"></span><button class="btn ghost small" id="tdChange">Đổi thời lượng</button></div>
+      <div class="steps" id="tdTasks"></div>
+      <div class="status ok" id="tdDone" hidden>Xong nhiệm vụ hôm nay. Muốn tập thêm thì vào Bản đồ đảo hoặc Luyện tự do.</div>
+      <button class="btn sun wide" id="tdGo">Bắt đầu</button>
+    </div>
+  </section>
+
+  <!-- BẢN ĐỒ -->
+  <section id="v-map" class="view" hidden style="flex-direction:column;gap:10px">
+    <p class="muted" style="margin:0">Đi lần lượt từng đảo. Bước nào cũng làm lại được. Bài luyện cần đúng từ 80% để qua.</p>
+    <div class="islands" id="mapList"></div>
+  </section>
+  <section id="v-island" class="view" hidden style="flex-direction:column;gap:10px">
+    <div class="card"><h3 id="islName"></h3><div class="muted" id="islSub"></div></div>
+    <div class="steps" id="islSteps"></div>
+  </section>
+
+  <!-- THEO LỚP -->
+  <section id="v-class" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="card">
+      <div class="label">Tuần này trên lớp học tới</div>
+      <div class="topics" id="clsTopics"></div>
+      <p class="muted" style="margin:0">Chọn bài Trang đang học trên lớp. Nhiệm vụ hôm nay sẽ dành một nửa cho bài này, và lộ trình chính không dạy trước phần lớp chưa học.</p>
+    </div>
+    <div class="label" id="clsNow"></div>
+    <div class="steps" id="clsSteps"></div>
+    <button class="btn wide" id="clsMix">🎯 Luyện tổng hợp bài này</button>
+  </section>
+
+  <!-- BÀI HỌC -->
+  <section id="v-lesson" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="card lesson"><h3 id="lTitle"></h3><div id="lBody"></div></div>
+    <div class="sheet" id="lSheet"></div>
+    <div class="row"><button class="btn ghost" id="lPlay">▶ Nghe</button><button class="btn sun" id="lDone">Hiểu rồi ✓</button></div>
+  </section>
+
+  <!-- LEO THẾ TAY -->
+  <section id="v-seq" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="hud"><span class="label" id="qsNum"></span><div class="bar"><i id="qsBar"></i></div></div>
+    <h3 id="qsTitle" style="margin:0;font-family:var(--f-display)"></h3>
+    <div class="sheet" id="qsSheet"></div>
+    <div class="feedback" id="qsInfo"><b></b><span class="muted"></span></div>
+    <div class="kbwrap"><div class="kb" id="qsKb"></div></div>
   </section>
 
   <!-- CÀI ĐẶT TRÒ GỌI TÊN NỐT -->
@@ -217,6 +308,7 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
 
   <!-- TRÒ CHƠI -->
   <section id="v-game" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="label" id="gTitle"></div>
     <div class="hud"><span id="qNum" class="label">1/10</span><button class="chip" id="gMic" hidden aria-label="Micro">🎙 <i></i></button><div class="bar"><i id="qBar"></i></div><span id="qScore">✓ 0</span></div>
     <div class="play">
       <div class="sheet" id="gSheet"></div>
@@ -237,7 +329,8 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
       <div class="row" style="align-items:baseline"><span class="big" id="rScore">0/10</span><span class="muted" id="rMsg"></span></div>
       <div id="rMissWrap"><div class="label" style="margin-bottom:8px">Nốt cần ôn</div><div class="misslist" id="rMiss"></div></div>
     </div>
-    <div class="row"><button class="btn sun" id="rAgain">Chơi lại</button><button class="btn ghost" data-go="setup">Đổi cài đặt</button><button class="btn ghost" data-go="home">Về đảo</button></div>
+    <div class="status" id="rPass" hidden></div>
+    <div class="row" id="rActions"></div>
   </section>
 
   <!-- KHÁM PHÁ PHÍM & KHUÔNG -->
@@ -321,7 +414,17 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
       <div class="seg" data-opt="grade"><button data-v="easy">Dễ · đúng tên nốt</button><button data-v="hard">Khó · đúng cả phím</button></div></div>
       <div class="switch"><div><b>Âm thanh</b><div class="muted">Tiếng đàn khi bấm phím và khi trả lời.</div></div><button class="toggle" role="switch" id="tSound" aria-label="Âm thanh"></button></div>
     </div>
-    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 2 · phiên bản dữ liệu 1</p>
+    <div class="card">
+      <h3>Sao lưu tiến độ</h3>
+      <p class="muted" style="margin:0">Tiến độ lưu ngay trên iPhone này. Thỉnh thoảng sao lưu một lần để lỡ xóa app hay đổi máy vẫn lấy lại được.</p>
+      <div class="row"><button class="btn" id="bMake">Chép mã sao lưu</button><button class="btn ghost" id="bFile">Tải file sao lưu</button></div>
+      <textarea id="bCode" class="code" rows="3" readonly hidden aria-label="Mã sao lưu"></textarea>
+      <div class="label">Khôi phục</div>
+      <textarea id="bIn" class="code" rows="3" placeholder="Dán mã sao lưu vào đây" aria-label="Dán mã sao lưu"></textarea>
+      <button class="btn ghost" id="bRestore">Khôi phục</button>
+      <div class="muted" id="bMsg" role="status"></div>
+    </div>
+    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 3 · bản 3.0 · dữ liệu phiên bản 2</p>
   </section>
 </div>
 
@@ -530,6 +633,245 @@ button:focus-visible, .key:focus-visible { outline: 3px solid var(--sun); outlin
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Pitch = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
+<script>// Nội dung lộ trình: 6 đảo (nhánh chính) + nhánh Theo lớp. Dữ liệu thuần, kiểm tra được bằng Node.
+// Loại bước:
+//   lesson   — thẻ giải thích ngắn + khuông minh họa
+//   drill    — luyện đọc nốt: pool = danh sách "khóa:nốt", count câu, octave = cần đúng cả phím
+//   sequence — leo thế tay: đánh lần lượt các nốt của một thế tay (lên rồi xuống)
+// concept: khái niệm cần có trước (nhánh lớp phải tới, hoặc Trang tự mở). soon: tính năng giai đoạn sau.
+(function (root) {
+  const T = (...ids) => ids.map(s => 'treble:' + s);
+  const B = (...ids) => ids.map(s => 'bass:' + s);
+  const range = (clef, lo, hi) => {
+    const L = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const d = s => +s.slice(-1) * 7 + L.indexOf(s[0]);
+    const out = [];
+    for (let x = d(lo); x <= d(hi); x++) out.push(clef + ':' + L[x % 7] + Math.floor(x / 7));
+    return out;
+  };
+
+  const STEPS = {
+    // ĐẢO 1 · Ra khỏi 5 ngón
+    's1-names': { type: 'lesson', title: 'Đô Rê Mi = C D E', body: [
+      'Mỗi nốt có hai cách gọi: tên Việt (Đô Rê Mi…) và tên chữ (C D E…). Sách và cô giáo có thể dùng cả hai.',
+      'Đô = C · Rê = D · Mi = E · Fa = F · Sol = G · La = A · Si = B.',
+      'Số đi kèm (C4, C5…) cho biết nốt ở quãng tám nào. C4 là Đô giữa, phím trắng ngay bên trái nhóm 2 phím đen ở giữa đàn.'],
+      show: { clef: 'treble', notes: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'] } },
+    's1-do-read': { type: 'drill', title: 'Đọc nốt thế Đô (tay phải)', pool: range('treble', 'C4', 'G4'), count: 10 },
+    's1-do-seq': { type: 'sequence', title: 'Leo thế Đô tay phải', pos: 'do', hand: 'right' },
+    's1-up': { type: 'drill', title: 'Ra khỏi 5 ngón: La, Si, Đô cao', pool: range('treble', 'C4', 'C5'), count: 12, octave: true },
+    's1-sol-lesson': { type: 'lesson', title: 'Thế Sol', body: [
+      'Khi giai điệu lên cao hơn Sol, tay phải dời lên thế Sol: ngón cái (1) đặt ở Sol, các ngón 2-3-4-5 đặt lên La, Si, Đô, Rê.',
+      'Trên khuông, Sol nằm ở dòng kẻ 2 của khóa Sol, chính là chỗ khóa Sol cuộn vòng quanh.'],
+      show: { clef: 'treble', notes: ['G4', 'A4', 'B4', 'C5', 'D5'], fingers: [1, 2, 3, 4, 5] } },
+    's1-sol-seq': { type: 'sequence', title: 'Leo thế Sol tay phải', pos: 'sol', hand: 'right' },
+    's1-mix': { type: 'drill', title: 'Đổi thế Đô ↔ Sol', pool: range('treble', 'C4', 'D5'), count: 15, octave: true },
+    's1-left-do-seq': { type: 'sequence', title: 'Leo thế Đô tay trái', pos: 'do', hand: 'left' },
+    's1-left-do': { type: 'drill', title: 'Đọc nốt thế Đô tay trái', pool: range('bass', 'C3', 'G3'), count: 10 },
+    's1-left-sol': { type: 'drill', title: 'Thế Sol tay trái', pool: range('bass', 'G2', 'D3'), count: 10, octave: true },
+
+    // ĐẢO 2 · Ngôi nhà 2 tầng
+    's2-rule': { type: 'lesson', title: 'Khóa Fa = khóa Sol + 2 tên', body: [
+      'Hai khóa dùng cùng 5 dòng kẻ nhưng đọc tên khác nhau. Cùng một vị trí, tên ở khóa Fa luôn đi lên 2 tên so với khóa Sol.',
+      'Ví dụ: dòng kẻ 1 là Mi ở khóa Sol, là Sol ở khóa Fa (Mi → Fa → Sol). Khe 3 là Đô ở khóa Sol, là Mi ở khóa Fa.',
+      'Mẹo: đọc vị trí như khóa Sol, rồi đếm lên 2 tên.'],
+      compare: true },
+    's2-landmarks': { type: 'lesson', title: 'Nốt mốc', body: [
+      'Nốt mốc là vài nốt nhớ thuộc lòng, các nốt khác tính từ đó ra.',
+      'Sol khóa Sol: dòng kẻ 2 (khóa Sol cuộn quanh nó). Fa khóa Fa: dòng kẻ 4 (nằm giữa hai chấm của khóa Fa).',
+      'Đô giữa: dòng kẻ phụ dưới khóa Sol, cũng là dòng kẻ phụ trên khóa Fa. Đô cao: khe 3 khóa Sol. Đô thấp: khe 2 khóa Fa.'],
+      show: { grand: true, notes: ['F3', 'C3', 'C4', 'G4', 'C5'] } },
+    's2-lm-drill': { type: 'drill', title: 'Nhận nốt mốc', pool: [...T('C4', 'G4', 'C5'), ...B('C3', 'F3', 'C4')], count: 10, octave: true },
+    's2-treble': { type: 'drill', title: 'Khóa Sol: trọn 5 dòng kẻ', pool: range('treble', 'E4', 'F5'), count: 15 },
+    's2-bass': { type: 'drill', title: 'Khóa Fa: trọn 5 dòng kẻ', pool: range('bass', 'G2', 'A3'), count: 15 },
+    's2-both': { type: 'drill', title: 'Hai tầng xen kẽ', pool: [...range('treble', 'E4', 'F5'), ...range('bass', 'G2', 'A3')], count: 20 },
+
+    // ĐẢO 3 · Gác mái & tầng hầm
+    's3-ledger': { type: 'lesson', title: 'Dòng kẻ phụ', body: [
+      'Nốt cao hoặc thấp hơn 5 dòng kẻ được viết trên những gạch ngắn gọi là dòng kẻ phụ.',
+      'Đô giữa (C4) nằm trên dòng kẻ phụ thứ 1 dưới khóa Sol, và cũng là dòng kẻ phụ thứ 1 trên khóa Fa. Cùng một phím đàn, chỉ khác chỗ viết.',
+      'Đếm dòng kẻ phụ như đếm dòng kẻ thường: dòng, khe, dòng, khe…'],
+      show: { grand: true, notes: ['C4'] } },
+    's3-middle': { type: 'drill', title: 'Vùng giữa hai tầng', pool: [...T('A3', 'B3', 'C4', 'D4'), ...B('B3', 'C4', 'D4', 'E4')], count: 12, octave: true },
+    's3-treble': { type: 'drill', title: 'Gác mái khóa Sol', pool: range('treble', 'A3', 'C6'), count: 15, octave: true },
+    's3-bass': { type: 'drill', title: 'Tầng hầm khóa Fa', pool: range('bass', 'C2', 'E4'), count: 15, octave: true },
+    's3-intervals': { type: 'lesson', title: 'Đọc theo khoảng cách', body: [
+      'Không cần đọc tên từng nốt. Nhìn nốt sau so với nốt trước:',
+      'Từ dòng sang khe kế bên (hoặc ngược lại) là bước lên/xuống 1 phím trắng. Từ dòng sang dòng kế tiếp là nhảy cách 1 phím (quãng 3).',
+      'Quãng 6 (ví dụ Đô lên La) là khoảng cách 6 nốt, tính cả nốt đầu và nốt cuối. Thế 5 ngón chỉ ôm được quãng 5, nên ngón 1 và ngón 5 phải mở rộng thêm một phím.'],
+      show: { clef: 'treble', notes: ['C4', 'D4', 'E4', 'G4', 'C4', 'A4'] } },
+
+    // ĐẢO 4 · Nhịp (giai đoạn 5)
+    's4-rhythm': { type: 'lesson', title: 'Trường độ nốt', soon: 'GĐ5', body: ['Phần nhịp mở ở giai đoạn 5.'] },
+    // ĐẢO 5 · Hợp âm & hai tay (giai đoạn 5)
+    's5-chords': { type: 'lesson', title: 'Hợp âm ba', soon: 'GĐ5', body: ['Phần hợp âm mở ở giai đoạn 5.'] },
+
+    // ĐẢO 6 · Bài lớn
+    's6-sharp': { type: 'lesson', title: 'Dấu thăng', concept: 'sharp', body: [
+      'Dấu thăng (♯) đặt trước nốt làm nốt cao lên nửa cung: đánh phím đen ngay bên phải.',
+      'Fa thăng là phím đen nằm giữa Fa và Sol. Trong cùng một ô nhịp, các nốt Fa phía sau cũng thăng theo.'],
+      show: { clef: 'treble', notes: ['F4', 'F#4', 'G4'] } },
+    's6-fsharp': { type: 'drill', title: 'Tìm Fa thăng', concept: 'sharp', pool: [...T('F4', 'F#4', 'G4', 'E4', 'F#5', 'F5'), ...B('F3', 'F#3', 'G3', 'F#2')], count: 12, octave: true },
+    's6-keysig': { type: 'lesson', title: 'Hóa biểu: dấu thăng đầu khuông', concept: 'keysig', body: [
+      'Dấu thăng đặt ngay sau khóa nhạc gọi là hóa biểu. Nó áp dụng cho TẤT CẢ nốt Fa trong cả bài, dù nốt đó không có dấu thăng bên cạnh.',
+      'Khóa Sol: dấu thăng nằm trên dòng kẻ 5 (Fa). Khóa Fa: nằm trên dòng kẻ 4 (Fa).',
+      'Mẹo của cô: trước khi đánh, nhìn đầu khuông và nhắc mình "Fa nào cũng thăng".'],
+      show: { clef: 'treble', keySig: 1, notes: ['G4', 'F#4', 'F#5', 'D5'] } },
+    's6-keysig-drill': { type: 'drill', title: 'Đừng quên Fa thăng', concept: 'keysig', keySig: 1, pool: [...T('D4', 'E4', 'F#4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F#5'), ...B('G2', 'A2', 'B2', 'D3', 'F#3', 'G3')], count: 15, octave: true },
+    's6-re-seq-r': { type: 'sequence', title: 'Leo thế Rê tay phải', concept: 'sharp', pos: 're', hand: 'right' },
+    's6-re-seq-l': { type: 'sequence', title: 'Leo thế Rê tay trái', concept: 'sharp', pos: 're', hand: 'left' },
+    's6-flat': { type: 'lesson', title: 'Dấu giáng và dấu bình', soon: 'GĐ5', concept: 'flat', body: ['Phần dấu giáng, dấu bình mở ở giai đoạn 5.'] },
+  };
+
+  const ISLANDS = [
+    { id: 'i1', name: 'Đảo Năm Ngón', sub: 'Ra khỏi 5 ngón', steps: ['s1-names', 's1-do-read', 's1-do-seq', 's1-up', 's1-sol-lesson', 's1-sol-seq', 's1-mix', 's1-left-do-seq', 's1-left-do', 's1-left-sol'] },
+    { id: 'i2', name: 'Đảo Hai Tầng', sub: 'Khóa Sol và khóa Fa', steps: ['s2-rule', 's2-landmarks', 's2-lm-drill', 's2-treble', 's2-bass', 's2-both'] },
+    { id: 'i3', name: 'Đảo Gác Mái', sub: 'Dòng kẻ phụ', steps: ['s3-ledger', 's3-middle', 's3-treble', 's3-bass', 's3-intervals'] },
+    { id: 'i4', name: 'Đảo Nhịp', sub: 'Trường độ, nhịp 3/4 và 4/4', steps: ['s4-rhythm'], soon: 'GĐ5' },
+    { id: 'i5', name: 'Đảo Hợp Âm', sub: 'Hợp âm và hai tay', steps: ['s5-chords'], soon: 'GĐ5' },
+    { id: 'i6', name: 'Đảo Bài Lớn', sub: 'Dấu thăng, hóa biểu, thế Rê', steps: ['s6-sharp', 's6-fsharp', 's6-keysig', 's6-keysig-drill', 's6-re-seq-r', 's6-re-seq-l', 's6-flat'] },
+  ];
+
+  // Nhánh Theo lớp: theo thứ tự sách. unlocks = khái niệm được mở khi lớp học tới.
+  const CLASS_TOPICS = [
+    { id: 'c18', title: 'Đô giữa ở tay trái', book: 'Bài 18', steps: ['s3-ledger', 's3-middle', 's1-left-do'] },
+    { id: 'c19', title: 'Nốt trên dòng kẻ, quãng 6', book: 'Bài 19', steps: ['s2-rule', 's2-treble', 's2-bass', 's3-intervals'] },
+    { id: 'c20', title: 'Nhịp 3/4, bản valse', book: 'Bài 20', steps: ['s4-rhythm'], soon: 'GĐ5' },
+    { id: 'c21', title: 'Thế Sol, đổi ngón', book: 'Bài 21', steps: ['s1-sol-lesson', 's1-sol-seq', 's1-mix', 's1-left-sol'] },
+    { id: 'c22', title: 'Nốt trắng chấm dôi, nốt tròn', book: 'Bài 22–24', steps: ['s4-rhythm'], soon: 'GĐ5' },
+    { id: 'c25', title: 'Dấu thăng, Fa thăng', book: 'Bài 25', unlocks: ['sharp'], steps: ['s6-sharp', 's6-fsharp'] },
+    { id: 'c26', title: 'Thế Rê, Fa thăng hai tay', book: 'Bài 26', unlocks: ['sharp'], steps: ['s6-re-seq-r', 's6-re-seq-l', 's6-fsharp'] },
+    { id: 'c27', title: 'Hóa biểu 1 dấu thăng', book: 'Bài 27–28', unlocks: ['sharp', 'keysig'], steps: ['s6-keysig', 's6-keysig-drill'] },
+    { id: 'c29', title: 'Đô thăng, dấu giáng, dấu bình', book: 'Over and Over', unlocks: ['sharp', 'keysig', 'flat'], steps: ['s6-flat'], soon: 'GĐ5' },
+  ];
+
+  // Các khái niệm đã mở theo vị trí nhánh lớp (mọi chủ đề tới chủ đề đang học) + những gì Trang tự mở
+  function unlockedConcepts(classTopicId, manual = []) {
+    const out = new Set(manual);
+    for (const t of CLASS_TOPICS) {
+      (t.unlocks || []).forEach(c => out.add(c));
+      if (t.id === classTopicId) break;
+    }
+    return out;
+  }
+
+  const api = { STEPS, ISLANDS, CLASS_TOPICS, unlockedConcepts };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Content = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>// Bộ nhớ ôn tập (Leitner), chuỗi ngày có ngày nghỉ, trạng thái bước học, xếp nhiệm vụ hôm nay.
+// Logic thuần — dữ liệu được truyền vào, không đụng giao diện hay bộ nhớ trình duyệt.
+(function (root) {
+  const K = typeof module !== 'undefined' && module.exports ? require('./content.js') : root.Content;
+
+  // ---------- Ngày ----------
+  const pad = n => String(n).padStart(2, '0');
+  const dayKey = (d = new Date()) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const addDays = (key, n) => { const [y, m, d] = key.split('-').map(Number); return dayKey(new Date(y, m - 1, d + n)); };
+
+  // ---------- Ôn tập: hộp 1..5, đúng thì lên hộp, sai về hộp 1 ----------
+  const GAP = [0, 0, 1, 2, 4, 7]; // số ngày chờ theo hộp
+  function srsUpdate(srs, key, ok, today) {
+    const it = srs[key] || (srs[key] = { box: 1, due: today, seen: 0, right: 0 });
+    it.seen++; if (ok) it.right++;
+    it.box = ok ? Math.min(5, it.box + 1) : 1;
+    it.due = addDays(today, GAP[it.box]);
+    it.last = today;
+    return it;
+  }
+  // Nốt cần ôn: đến hạn trước (hộp thấp trước), thiếu thì lấy nốt có tỉ lệ đúng thấp nhất
+  function reviewPool(srs, today, n) {
+    const all = Object.entries(srs);
+    const acc = it => it.seen ? it.right / it.seen : 1;
+    const due = all.filter(([, it]) => it.due <= today).sort((a, b) => a[1].box - b[1].box || acc(a[1]) - acc(b[1]));
+    const out = due.slice(0, n).map(([k]) => k);
+    if (out.length < n) {
+      const rest = all.filter(([k]) => !out.includes(k) && all.length).sort((a, b) => acc(a[1]) - acc(b[1]) || a[1].box - b[1].box);
+      for (const [k, it] of rest) { if (out.length >= n) break; if (acc(it) < 1 || it.box < 3) out.push(k); }
+    }
+    return out;
+  }
+  const weakCount = (srs, today) => Object.values(srs).filter(it => it.due <= today && it.box <= 2).length;
+
+  // ---------- Chuỗi ngày: mỗi tuần (7 ngày) được nghỉ 1 ngày mà không mất chuỗi ----------
+  const diff = (a, b) => Math.abs(Math.round((Date.UTC(...a.split('-').map((v, i) => i === 1 ? v - 1 : +v)) - Date.UTC(...b.split('-').map((v, i) => i === 1 ? v - 1 : +v))) / 864e5));
+  function streak(days, today) {
+    let k = days[today] ? today : addDays(today, -1), count = 0;
+    const rests = [];
+    for (let guard = 0; guard < 4000; guard++) {
+      if (days[k]) { count++; k = addDays(k, -1); continue; }
+      // ngày trống: được coi là ngày nghỉ nếu hôm trước có tập và 7 ngày quanh đó chưa nghỉ lần nào
+      if (days[addDays(k, -1)] && !rests.some(r => diff(r, k) < 7)) { rests.push(k); k = addDays(k, -1); continue; }
+      break;
+    }
+    return { count, restLeft: rests.some(r => diff(r, today) < 7) ? 0 : 1, rests };
+  }
+
+  // ---------- Trạng thái bước học ----------
+  // 'done' | 'open' | 'soon' (giai đoạn sau) | 'concept' (chờ lớp học tới)
+  function stepState(id, progress, concepts) {
+    const st = K.STEPS[id];
+    if (st.soon) return 'soon';
+    if (progress[id] && progress[id].done) return 'done';
+    if (st.concept && !concepts.has(st.concept)) return 'concept';
+    return 'open';
+  }
+  function islandProgress(isl, progress) {
+    const real = isl.steps.filter(s => !K.STEPS[s].soon);
+    const done = real.filter(s => progress[s] && progress[s].done).length;
+    return { done, total: real.length };
+  }
+  // Bước tiếp theo trên nhánh chính (theo thứ tự đảo, bỏ qua bước giai đoạn sau và bước chờ lớp)
+  function roadNext(progress, concepts, n = 1, skip = []) {
+    const out = [];
+    for (const isl of K.ISLANDS) for (const s of isl.steps) {
+      if (out.length >= n) return out;
+      if (!skip.includes(s) && stepState(s, progress, concepts) === 'open') out.push(s);
+    }
+    return out;
+  }
+  function classNext(topicId, progress, concepts, n = 1, skip = []) {
+    const t = K.CLASS_TOPICS.find(x => x.id === topicId);
+    if (!t) return [];
+    // bước trong chủ đề lớp luôn được mở (lớp đã học tới đó)
+    const c2 = new Set([...concepts, ...(t.unlocks || [])]);
+    return t.steps.filter(s => !skip.includes(s) && stepState(s, progress, c2) === 'open').slice(0, n);
+  }
+  // Toàn bộ nốt của các bài luyện đã học trong một chủ đề lớp (để luyện tổng hợp khi đã xong hết)
+  function topicPool(topicId) {
+    const t = K.CLASS_TOPICS.find(x => x.id === topicId);
+    if (!t) return [];
+    return [...new Set(t.steps.flatMap(s => K.STEPS[s].type === 'drill' ? K.STEPS[s].pool : []))];
+  }
+  function learnedPool(progress) {
+    return [...new Set(Object.keys(progress).filter(s => progress[s].done && K.STEPS[s] && K.STEPS[s].type === 'drill').flatMap(s => K.STEPS[s].pool))];
+  }
+
+  // ---------- Nhiệm vụ hôm nay ----------
+  const SHAPE = { 5: { review: 12, cls: 0, road: 0 }, 10: { review: 8, cls: 1, road: 1 }, 20: { review: 10, cls: 2, road: 2 }, 30: { review: 12, cls: 3, road: 3 } };
+  function buildPlan(minutes, ctx) {
+    const { progress, concepts, classTopic } = ctx;
+    const shape = SHAPE[minutes] || SHAPE[10];
+    const tasks = [{ kind: 'review', count: shape.review }];
+    const cls = classNext(classTopic, progress, concepts, shape.cls);
+    cls.forEach(id => tasks.push({ kind: 'step', id, track: 'class' }));
+    if (shape.cls && cls.length < shape.cls) {
+      const pool = topicPool(classTopic);
+      if (pool.length) tasks.push({ kind: 'mix', track: 'class', pool, count: 10 * (shape.cls - cls.length) });
+    }
+    const road = roadNext(progress, concepts, shape.road, cls);
+    road.forEach(id => tasks.push({ kind: 'step', id, track: 'road' }));
+    if (shape.road && road.length < shape.road) {
+      const pool = learnedPool(progress);
+      if (pool.length) tasks.push({ kind: 'mix', track: 'road', pool, count: 10 * (shape.road - road.length) });
+    }
+    return tasks.map(t => ({ ...t, done: false }));
+  }
+
+  const api = { dayKey, addDays, srsUpdate, reviewPool, weakCount, streak, stepState, islandProgress, roadNext, classNext, topicPool, learnedPool, buildPlan, GAP };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Plan = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
 <script>
 (() => {
 const C = window.NoteCore;
@@ -538,14 +880,24 @@ const $$ = s => [...document.querySelectorAll(s)];
 
 /* ---------- Lưu trữ (có số phiên bản) ---------- */
 const STORE_KEY = 'daonot';
-const DEFAULTS = { schema: 1, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause: true, sens: 'cao' },
+const DEFAULTS = { schema: 2, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause: true, sens: 'cao', minutes: 10 },
   setup: { clef: 'treble', range: 'inside', answer: 'names', count: '10' },
-  hands: { pos: 'do', hand: 'right' }, stats: { notes: {} }, mic: { calib: { semis: 0 } } };
+  hands: { pos: 'do', hand: 'right' }, mic: { calib: { semis: 0 } },
+  srs: {}, progress: {}, days: {}, classTopic: 'c18', manualConcepts: [], today: null };
 function migrate(d) {
-  if (!d || typeof d !== 'object') return structuredClone(DEFAULTS);
-  // schema 1 là bản đầu. Các giai đoạn sau thêm bước chuyển đổi ở đây.
   const out = structuredClone(DEFAULTS);
-  for (const k of ['settings', 'setup', 'hands', 'stats', 'mic']) Object.assign(out[k], d[k] || {});
+  if (!d || typeof d !== 'object') return out;
+  for (const k of ['settings', 'setup', 'hands', 'mic', 'srs', 'progress', 'days']) Object.assign(out[k], d[k] || {});
+  for (const k of ['classTopic', 'manualConcepts', 'today']) if (d[k] !== undefined) out[k] = d[k];
+  // phiên bản 1 → 2: thống kê nốt cũ chuyển thành dữ liệu ôn tập
+  if ((d.schema || 1) < 2 && d.stats && d.stats.notes) {
+    const today = Plan.dayKey();
+    for (const [key, v] of Object.entries(d.stats.notes)) {
+      if (out.srs[key] || !v.seen) continue;
+      out.srs[key] = { box: v.right / v.seen >= 0.8 ? 3 : 1, due: today, seen: v.seen, right: v.right };
+    }
+  }
+  out.schema = 2;
   return out;
 }
 let state;
@@ -693,26 +1045,38 @@ function buildKeyboard(root, onPress) {
 }
 
 /* ---------- Điều hướng ---------- */
-const TITLES = { home: 'Đảo Nốt Nhạc', setup: 'Gọi tên nốt', game: 'Gọi tên nốt', result: 'Gọi tên nốt', explore: 'Phím & khuông', hands: 'Thế tay', mic: 'Micro & hiệu chỉnh', settings: 'Cài đặt' };
+const TITLES = { home: 'Đảo Nốt Nhạc', setup: 'Luyện tự do', game: 'Luyện đọc nốt', result: 'Kết quả', explore: 'Phím & khuông', hands: 'Thế tay', mic: 'Micro & hiệu chỉnh', settings: 'Cài đặt',
+  today: 'Nhiệm vụ hôm nay', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
+const BACK = { setup: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
+const VERSION = 'Giai đoạn 3 · bản 3.0';
 let current = 'home';
-function go(v) {
-  if (v !== 'game' && v !== 'mic') Mic.stop();
+// inFlow = màn hình nằm trong một lượt tập (trò chơi, bài học, kết quả): nút quay lại về nơi bắt đầu lượt đó
+function go(v, inFlow) {
+  if (v !== 'game' && v !== 'mic' && v !== 'seq') Mic.stop();
   Mic.onNote = null; Mic.onFrame = null;
   if (current === 'mic' && v !== 'mic') micTest = null;
+  if (!inFlow && BACK[v] === undefined && v !== 'home') flowBack = 'home';
   current = v;
   $$('.view').forEach(s => { s.hidden = s.id !== 'v-' + v; s.style.display = s.hidden ? 'none' : 'flex'; });
   $('#backBtn').hidden = v === 'home';
   $('#title').firstChild.textContent = TITLES[v];
-  $('#subtitle').textContent = v === 'home' ? 'Giai đoạn 2 · bản 2.5' : '';
+  $('#subtitle').textContent = v === 'home' ? VERSION : '';
   $('#settingsBtn').hidden = v === 'settings';
   if (v === 'explore') initExplore();
   if (v === 'hands') renderHands();
   if (v === 'mic') enterMic();
-  if (v === 'home') renderHomeBanner();
+  if (v === 'home') { renderHomeBanner(); renderHomeToday(); }
+  if (v === 'today') renderToday();
+  if (v === 'map') renderMap();
+  if (v === 'island') renderIsland();
+  if (v === 'class') renderClass();
   window.scrollTo(0, 0);
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
-$('#backBtn').onclick = () => go(['game', 'result'].includes(current) ? 'setup' : 'home');
+$('#backBtn').onclick = () => {
+  if (['game', 'lesson', 'seq'].includes(current)) { G = null; SQ = null; }
+  go(BACK[current] || flowBack || 'home');
+};
 $('#settingsBtn').onclick = () => go('settings');
 
 /* ---------- Nút chọn (segmented) ---------- */
@@ -785,35 +1149,42 @@ function renderHands() {
 }
 $('#hPlay').onclick = () => { const list = C.handPosition(state.hands.pos, state.hands.hand).map(x => x.note); playSeq(state.hands.hand === 'right' ? list : list); };
 
-/* ---------- TRÒ GỌI TÊN NỐT ---------- */
-let G = null, gKb = null;
-function pool() {
+/* ---------- BỘ LUYỆN ĐỌC NỐT (dùng chung cho Luyện tự do, nhiệm vụ, bước học) ---------- */
+let G = null, gKb = null, lastDrill = null;
+const SHARP_ORDER = [3, 0, 4, 1, 5, 2, 6]; // Fa Đô Sol Rê La Mi Si
+const coveredByKey = (n, ks) => ks > 0 ? n.acc === 1 && SHARP_ORDER.slice(0, ks).includes(n.step) : ks < 0 ? n.acc === -1 && [6, 2, 5, 1, 4, 0, 3].slice(0, -ks).includes(n.step) : false;
+const parseKey = k => { const [clef, s] = k.split(':'); return { clef, note: C.parse(s) }; };
+function freePool() {
   const clefs = state.setup.clef === 'both' ? ['treble', 'bass'] : [state.setup.clef];
   const out = [];
   clefs.forEach(clef => C.notesInRange(...C.RANGES[clef][state.setup.range]).forEach(n => out.push({ clef, note: n })));
   return out;
 }
-const hidesLabels = () => state.setup.answer !== 'names';
-async function startGame() {
-  const total = +state.setup.count;
-  const mode = state.setup.answer;
+const hidesLabels = () => !G || G.mode !== 'names';
+// cfg: { title, pool:[{clef,note}], count, keySig, octave, onDone(result), againLabel }
+async function startDrill(cfg) {
+  let mode = state.setup.answer;
+  if (cfg.octave && mode === 'names') mode = 'keys'; // bài cần đúng cả phím thì không trả lời bằng nút tên
   if (mode === 'piano') {
     const r = await Mic.start();
-    if (!r.ok) { renderSetupNote(r.error); go('setup'); return; }
+    if (!r.ok) mode = 'keys';
   }
-  G = { total, mode, i: 0, score: 0, pool: pool(), queue: [], missed: new Map(), last: null, locked: false, q: null };
-  if (!gKb) gKb = buildKeyboard($('#gKb'), (n, k) => answerKey(n));
+  G = { ...cfg, total: cfg.count, mode, i: 0, score: 0, queue: [], missed: new Map(), last: null, locked: false, q: null, keySig: cfg.keySig || 0 };
+  lastDrill = cfg;
+  if (!gKb) gKb = buildKeyboard($('#gKb'), (n) => answerKey(n));
   gKb.labels(hidesLabels() ? 'off' : state.settings.names);
   buildAnswers();
-  $('#gKbWrap').hidden = false;
+  $('#gTitle').textContent = cfg.title || 'Gọi tên nốt';
   $('#gSelf').hidden = mode !== 'self';
   $('#gMic').hidden = mode !== 'piano';
-  go('game');
+  go('game', true);
   if (mode === 'piano') { Mic.onNote = gameNote; Mic.onFrame = gameFrame; }
   nextQ();
 }
-$('#startGame').onclick = () => { audio(); startGame(); };
-$('#rAgain').onclick = () => { audio(); startGame(); };
+function startFree() {
+  startDrill({ title: 'Luyện tự do', pool: freePool(), count: +state.setup.count, onDone: r => showResult(r, { again: startFree, back: 'setup' }) });
+}
+$('#startGame').onclick = () => { audio(); startFree(); };
 function renderSetupNote(err) {
   const box = $('#setupNote');
   if (state.setup.answer !== 'piano') { box.hidden = true; return; }
@@ -830,14 +1201,19 @@ function renderSetupNote(err) {
 
 function buildAnswers() {
   const box = $('#gAnswers'); box.replaceChildren();
-  box.hidden = state.setup.answer === 'keys';
+  box.hidden = G.mode !== 'names';
   const mode = state.settings.names === 'off' ? 'vi' : state.settings.names;
-  C.SOLFEGE.forEach((s, i) => {
-    const b = document.createElement('button'); b.dataset.step = i;
-    const n = { step: i, oct: 4, acc: 0 };
+  const opts = C.SOLFEGE.map((s, i) => ({ step: i, acc: 0 }));
+  // thêm nút cho các nốt thăng/giáng có trong bài
+  const extra = new Map();
+  G.pool.forEach(q => { if (q.note.acc) extra.set(q.note.step + ':' + q.note.acc, { step: q.note.step, acc: q.note.acc }); });
+  extra.forEach(o => opts.push(o));
+  opts.forEach(o => {
+    const b = document.createElement('button'); b.dataset.step = o.step; b.dataset.acc = o.acc;
+    const n = { step: o.step, oct: 4, acc: o.acc };
     if (mode === 'both') { b.textContent = C.name(n, 'vi'); const sm = document.createElement('small'); sm.textContent = C.name(n, 'en'); b.appendChild(sm); }
     else b.textContent = C.name(n, mode);
-    b.onclick = () => answerStep(i, b);
+    b.onclick = () => answerStep(o, b);
     box.appendChild(b);
   });
 }
@@ -850,16 +1226,19 @@ function pick() {
   while (G.pool.length > 1 && G.last && C.id(q.note) === C.id(G.last.note) && q.clef === G.last.clef);
   return q;
 }
+function drawQ(item) {
+  drawStaves($('#gSheet'), [{ clef: G.q.clef, keySig: G.keySig, items: [{ hideAcc: coveredByKey(G.q.note, G.keySig), ...item }] }], { minWidth: 200, aria: 'Nốt cần đọc' });
+}
 function nextQ() {
   if (G.i >= G.total) return finish();
   G.q = pick(); G.last = G.q; G.locked = false;
   $('#qNum').textContent = (G.i + 1) + '/' + G.total;
   $('#qBar').style.width = (G.i / G.total * 100) + '%';
   $('#qScore').textContent = '✓ ' + G.score;
-  drawStaves($('#gSheet'), [{ clef: G.q.clef, items: [{ note: G.q.note }] }], { minWidth: 200, aria: 'Nốt cần đọc' });
+  drawQ({ note: G.q.note });
   const fb = $('#gFeedback'); fb.className = 'feedback';
   fb.querySelector('b').textContent = { keys: 'Bấm đúng phím này trên đàn ảo', piano: 'Đánh nốt này trên đàn thật', self: 'Đánh nốt này trên đàn thật, rồi xem đáp án', names: 'Nốt này tên gì?' }[G.mode];
-  $('#gHint').textContent = G.q.clef === 'treble' ? 'Khóa Sol · tay phải' : 'Khóa Fa · tay trái';
+  $('#gHint').textContent = (G.q.clef === 'treble' ? 'Khóa Sol · tay phải' : 'Khóa Fa · tay trái') + (G.keySig ? ' · nhớ nhìn hóa biểu đầu khuông' : '');
   $$('#gAnswers button').forEach(b => b.className = '');
   gKb.clear();
   $('#gNext').hidden = true;
@@ -867,21 +1246,22 @@ function nextQ() {
   if (G.mode === 'self') { $('#gReveal').hidden = false; $('#gSelfOk').hidden = true; $('#gSelfNo').hidden = true; }
   if (G.mode !== 'names') requestAnimationFrame(() => gKb.center(G.q.clef === 'treble' ? 'C5' : 'C3'));
 }
-function answerStep(step, btn) {
-  if (G.locked) return;
-  resolve(step === G.q.note.step, () => btn.classList.add(step === G.q.note.step ? 'ok' : 'no'));
+function answerStep(o, btn) {
+  if (!G || G.locked) return;
+  const ok = o.step === G.q.note.step && o.acc === G.q.note.acc;
+  resolve(ok, () => btn.classList.add(ok ? 'ok' : 'no'));
 }
 function answerKey(n) {
   if (!G || G.locked || current !== 'game') { play(n); return; }
   if (G.mode !== 'keys') { play(n); return; }
-  const ok = C.id(n) === C.id(G.q.note);
+  const ok = C.midi(n) === C.midi(G.q.note);
   resolve(ok, () => gKb.mark(C.id(n), ok ? 'ok' : 'no'), n);
 }
 function resolve(ok, markFn, pressed, heardText) {
   G.locked = true; markFn();
   const n = G.q.note, key = G.q.clef + ':' + C.id(n);
-  const st = state.stats.notes[key] || (state.stats.notes[key] = { seen: 0, right: 0 });
-  st.seen++; if (ok) st.right++; save();
+  if (!G.practice) Plan.srsUpdate(state.srs, key, ok, Plan.dayKey());
+  save();
   const fb = $('#gFeedback');
   if (ok) {
     G.score++;
@@ -891,7 +1271,7 @@ function resolve(ok, markFn, pressed, heardText) {
     $('#gHint').textContent = C.describePos(C.staffPos(n, G.q.clef));
     $('#gSheet').classList.remove('flash-good'); void $('#gSheet').offsetWidth; $('#gSheet').classList.add('flash-good');
     G.i++;
-    setTimeout(nextQ, 850);
+    setTimeout(() => { if (current === 'game' && G) nextQ(); }, 850);
   } else {
     if (pressed) play(pressed);
     setTimeout(() => play(n), pressed ? 450 : 0);
@@ -900,13 +1280,14 @@ function resolve(ok, markFn, pressed, heardText) {
     const lm = C.nearestLandmark(n);
     const p = C.staffPos(n, G.q.clef);
     let hint = 'Nằm ở ' + C.describePos(p) + '. ';
+    if (coveredByKey(n, G.keySig)) hint = 'Nhìn đầu khuông: hóa biểu có dấu thăng ở ' + C.SOLFEGE[n.step] + ', nên nốt ' + C.SOLFEGE[n.step] + ' nào cũng thăng. ' + hint;
     if (lm.steps === 0) hint += 'Đây chính là nốt mốc ' + C.name(lm.landmark, 'vi') + ' (' + C.id(lm.landmark) + ').';
     else hint += 'Mẹo: từ nốt mốc ' + C.name(lm.landmark, 'vi') + ' (' + C.id(lm.landmark) + ') ' + (lm.steps > 0 ? 'đếm lên ' : 'đếm xuống ') + Math.abs(lm.steps) + ' bậc.';
     if (heardText) hint = 'Trang vừa đánh ' + heardText + '. ' + hint;
     if (G.mode === 'piano') { hint += ' Đánh lại đúng nốt trên đàn để sang câu tiếp.'; G.awaitFix = true; }
     $('#gHint').textContent = hint;
-    drawStaves($('#gSheet'), [{ clef: G.q.clef, items: [{ note: n, color: '#cc3f33', label: C.name(n, state.settings.names === 'off' ? 'vi' : state.settings.names) }] }], { minWidth: 200 });
-    $$('#gAnswers button').forEach(b => { if (+b.dataset.step === n.step) b.classList.add('ok'); });
+    drawQ({ note: n, color: '#cc3f33', label: C.name(n, state.settings.names === 'off' ? 'vi' : state.settings.names) });
+    $$('#gAnswers button').forEach(b => { if (+b.dataset.step === n.step && +b.dataset.acc === n.acc) b.classList.add('ok'); });
     gKb.mark(C.id(n), 'target');
     gKb.center(C.id(n));
     G.missed.set(key, G.q);
@@ -916,7 +1297,7 @@ function resolve(ok, markFn, pressed, heardText) {
     $('#gNext').focus({ preventScroll: true });
   }
 }
-$('#gNext').onclick = nextQ;
+$('#gNext').onclick = () => nextQ();
 
 /* Đàn thật qua micro */
 function midiToNote(m) {
@@ -928,11 +1309,11 @@ function gameNote(m) {
   if (!G || current !== 'game' || G.mode !== 'piano') return;
   const target = C.midi(G.q.note);
   if (G.locked) { // đang chờ Trang đánh lại cho đúng
-    if (G.awaitFix && m === target) { G.awaitFix = false; gKb.mark(C.id(G.q.note), 'ok'); $('#gHint').textContent = 'Đúng phím rồi. Sang câu tiếp…'; setTimeout(nextQ, 700); }
+    if (G.awaitFix && m === target) { G.awaitFix = false; gKb.mark(C.id(G.q.note), 'ok'); $('#gHint').textContent = 'Đúng phím rồi. Sang câu tiếp…'; setTimeout(() => { if (current === 'game') nextQ(); }, 700); }
     return;
   }
   const exact = m === target, sameName = (((m - target) % 12) + 12) % 12 === 0;
-  const easy = state.settings.grade === 'easy';
+  const easy = state.settings.grade === 'easy' && !G.octave;
   if (exact || (easy && sameName)) return resolve(true, () => gKb.mark(C.id(midiToNote(m)), 'ok'));
   if (sameName && !G.octaveWarned) {
     G.octaveWarned = true;
@@ -948,7 +1329,7 @@ function gameFrame(fr) {
   const chip = $('#gMic');
   if (!fr) { chip.classList.add('off'); chip.classList.remove('live'); chip.firstChild.textContent = '🎙 Bật lại '; return; }
   chip.classList.remove('off'); chip.firstChild.textContent = '🎙 ';
-  chip.classList.toggle('live', fr.rms > 0.01);
+  chip.classList.toggle('live', fr.rms > sens().listen.minRms);
 }
 $('#gMic').onclick = async () => { if (!Mic.on) { const r = await Mic.start(); if (r.ok) { Mic.onNote = gameNote; Mic.onFrame = gameFrame; } } };
 
@@ -967,20 +1348,39 @@ $('#gSelfNo').onclick = () => { if (!G || G.locked) return; $('#gSelfOk').hidden
 $('#gFeedback').onclick = () => { if (!$('#gNext').hidden) nextQ(); };
 function finish() {
   $('#qBar').style.width = '100%';
-  $('#rScore').textContent = G.score + '/' + G.total;
-  const pct = G.score / G.total;
-  $('#rMsg').textContent = pct === 1 ? 'Tuyệt đối! Thử vùng khó hơn nhé.' : pct >= 0.8 ? 'Rất tốt. Ôn lại vài nốt bên dưới.' : pct >= 0.5 ? 'Đang lên tay. Chơi thêm một lượt nữa.' : 'Từ từ thôi, đọc chậm mà chắc.';
+  markDay();
+  const r = { score: G.score, total: G.total, missed: [...G.missed.values()] };
+  const done = G.onDone; G = null;
+  Mic.onNote = null;
+  done ? done(r) : showResult(r, {});
+}
+// Màn hình kết quả. opts: { again(), back: view, next: {label, fn}, passMsg }
+function showResult(r, opts) {
+  $('#rScore').textContent = r.score + '/' + r.total;
+  const pct = r.score / r.total;
+  $('#rMsg').textContent = pct === 1 ? 'Tuyệt đối!' : pct >= 0.8 ? 'Rất tốt. Ôn lại vài nốt bên dưới.' : pct >= 0.5 ? 'Đang lên tay. Chơi thêm một lượt nữa.' : 'Từ từ thôi, đọc chậm mà chắc.';
+  const ps = $('#rPass'); ps.hidden = !opts.passMsg; if (opts.passMsg) { ps.className = 'status ' + (opts.passed ? 'ok' : ''); ps.textContent = opts.passMsg; }
   const box = $('#rMiss'); box.replaceChildren();
-  $('#rMissWrap').hidden = G.missed.size === 0;
-  G.missed.forEach(q => {
+  $('#rMissWrap').hidden = r.missed.length === 0;
+  r.missed.forEach(q => {
     const f = document.createElement('figure'); f.className = 'sheet'; f.style.margin = 0;
     const d = document.createElement('div'); f.appendChild(d);
     drawStaves(d, [{ clef: q.clef, items: [{ note: q.note }] }], { minWidth: 110, step: 30 });
-    const cap = document.createElement('figcaption'); cap.textContent = C.name(q.note, 'vi') + ' · ' + C.id(q.note); f.appendChild(cap);
+    const cap = document.createElement('figcaption'); cap.textContent = C.name(q.note, 'vi') + ' · ' + C.id(q.note).replace('#', '♯'); f.appendChild(cap);
     f.onclick = () => play(q.note);
     box.appendChild(f);
   });
-  go('result');
+  const acts = $('#rActions'); acts.replaceChildren();
+  const btn = (label, cls, fn) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = label; b.onclick = fn; acts.appendChild(b); };
+  if (opts.next) btn(opts.next.label, 'sun', opts.next.fn);
+  if (opts.again) btn('Làm lại', opts.next ? 'ghost' : 'sun', () => { audio(); opts.again(); });
+  btn(opts.backLabel || 'Về đảo', 'ghost', () => go(opts.back || 'home'));
+  go('result', true);
+}
+function markDay() {
+  const k = Plan.dayKey();
+  state.days[k] = (state.days[k] || 0) + 1;
+  save();
 }
 
 /* ---------- MICRO: bộ nghe dùng chung ---------- */
@@ -1232,7 +1632,7 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · ban 2.5',
+    'Dao Not Nhac · ban 3.0',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),
@@ -1259,6 +1659,318 @@ $('#mCopy').onclick = async () => {
   setTimeout(() => $('#mCopy').textContent = 'Chép kết quả', 2000);
 };
 
+/* ---------- LỘ TRÌNH: chạy một bước học ---------- */
+const K = window.Content;
+let flowBack = 'home';
+const concepts = () => K.unlockedConcepts(state.classTopic, state.manualConcepts);
+const stepIcon = t => ({ lesson: '📖', drill: '🎯', sequence: '✋' })[t];
+function recordStep(id, passed, r) {
+  const p = state.progress[id] || (state.progress[id] = {});
+  if (r) p.best = Math.max(p.best || 0, Math.round(r.score / r.total * 100));
+  if (passed) { p.done = true; p.at = Plan.dayKey(); }
+  save();
+}
+// after: { back, backLabel, next: {label, fn}, onFinish(passed) }
+function runStep(id, after = {}) {
+  const st = K.STEPS[id];
+  if (!st || st.soon) return;
+  flowBack = after.back || flowBack;
+  audio();
+  if (st.type === 'lesson') return openLesson(id, after);
+  if (st.type === 'sequence') return startSeq(id, after);
+  startDrill({
+    title: st.title, pool: st.pool.map(parseKey), count: st.count, keySig: st.keySig, octave: st.octave,
+    onDone: r => {
+      const passed = r.score / r.total >= 0.8;
+      recordStep(id, passed, r);
+      if (after.onFinish) after.onFinish(passed);
+      showResult(r, {
+        passed, passMsg: passed ? 'Qua bước "' + st.title + '" ✓' : 'Cần đúng từ 80% để qua bước này. Làm lại lúc nào cũng được.',
+        again: () => runStep(id, after), next: after.next, back: after.back, backLabel: after.backLabel,
+      });
+    },
+  });
+}
+function afterStepScreen(after) {
+  if (after.onFinish) after.onFinish(true);
+  if (after.next) after.next.fn(); else go(after.back || 'home');
+}
+
+/* ---------- BÀI HỌC (thẻ giải thích) ---------- */
+let lessonAfter = null, lessonId = null;
+function lessonStaves(st) {
+  const mode = state.settings.names === 'off' ? 'both' : state.settings.names;
+  if (st.compare) {
+    const tr = ['E4', 'G4', 'B4', 'D5', 'F5'].map(C.parse), bs = ['G2', 'B2', 'D3', 'F3', 'A3'].map(C.parse);
+    return { staves: [{ clef: 'treble', items: tr.map(n => ({ note: n, label: C.name(n, mode) })) }, { clef: 'bass', items: bs.map(n => ({ note: n, label: C.name(n, mode) })) }], notes: [...tr, ...bs] };
+  }
+  const sh = st.show; if (!sh) return null;
+  const notes = sh.notes.map(C.parse);
+  if (sh.grand) {
+    const t = notes.map(n => C.midi(n) >= 60 ? { note: n } : null), b = notes.map(n => C.midi(n) <= 60 ? { note: n, label: C.name(n, mode) } : null);
+    notes.forEach((n, i) => { if (t[i] && !b[i]) t[i].label = C.name(n, mode); });
+    return { staves: [{ clef: 'treble', items: t }, { clef: 'bass', items: b }], notes };
+  }
+  return { staves: [{ clef: sh.clef, keySig: sh.keySig, items: notes.map((n, i) => ({ note: n, hideAcc: coveredByKey(n, sh.keySig || 0), finger: sh.fingers && state.settings.finger ? sh.fingers[i] : 0, label: C.name(n, mode) })) }], notes };
+}
+function openLesson(id, after) {
+  const st = K.STEPS[id];
+  lessonAfter = after; lessonId = id;
+  $('#lTitle').textContent = st.title;
+  const body = $('#lBody'); body.replaceChildren();
+  st.body.forEach(t => { const p = document.createElement('p'); p.textContent = t; body.appendChild(p); });
+  const ill = lessonStaves(st);
+  $('#lSheet').hidden = !ill; $('#lPlay').hidden = !ill;
+  if (ill) { drawStaves($('#lSheet'), ill.staves, { minWidth: 280, step: ill.notes.length > 6 ? 34 : 46 }); $('#lPlay').onclick = () => playSeq(ill.notes, 0.5); }
+  go('lesson', true);
+}
+$('#lDone').onclick = () => { recordStep(lessonId, true); markDay(); afterStepScreen(lessonAfter || {}); };
+
+/* ---------- LEO THẾ TAY (đánh lần lượt các nốt của thế tay, lên rồi xuống, 2 lượt) ---------- */
+let SQ = null, qsKb = null;
+async function startSeq(id, after) {
+  const st = K.STEPS[id];
+  const list = C.handPosition(st.pos, st.hand);
+  const up = list.map(x => x.note), order = [...up, ...up.slice(0, -1).reverse()];
+  const targets = [...order, ...order.slice(1)];
+  let mode = state.setup.answer === 'piano' ? 'piano' : 'keys';
+  if (mode === 'piano') { const r = await Mic.start(); if (!r.ok) mode = 'keys'; }
+  SQ = { id, st, after, list, targets, i: 0, errors: 0, mode, clef: st.hand === 'right' ? 'treble' : 'bass' };
+  if (!qsKb) qsKb = buildKeyboard($('#qsKb'), n => seqInput(C.midi(n), n));
+  qsKb.labels('off');
+  $('#qsTitle').textContent = st.title;
+  go('seq', true);
+  if (mode === 'piano') { Mic.onNote = m => seqInput(m); Mic.onFrame = null; }
+  renderSeq();
+  requestAnimationFrame(() => qsKb.center(C.id(list[2].note)));
+}
+function renderSeq() {
+  const { list, targets, i, clef } = SQ;
+  const cur = targets[i];
+  drawStaves($('#qsSheet'), [{ clef, items: list.map(x => ({ note: x.note, finger: state.settings.finger ? x.finger : 0, color: cur && C.midi(x.note) === C.midi(cur) ? '#e09a00' : undefined })) }], { minWidth: 300 });
+  qsKb.clear();
+  list.forEach(x => qsKb.mark(C.id(x.note), C.midi(x.note) === C.midi(cur || x.note) && cur ? 'target' : 'hl', x.finger));
+  $('#qsNum').textContent = Math.min(i + 1, targets.length) + '/' + targets.length;
+  $('#qsBar').style.width = (i / targets.length * 100) + '%';
+  const f = list.find(x => cur && C.midi(x.note) === C.midi(cur));
+  $('#qsInfo').querySelector('b').textContent = cur ? 'Đánh ' + C.name(cur, 'vi') + (f && state.settings.finger ? ' · ngón ' + f.finger : '') : 'Xong!';
+  $('#qsInfo').querySelector('span').textContent = (SQ.mode === 'piano' ? 'App đang nghe đàn thật. ' : 'Bấm trên đàn ảo, hoặc chọn Đàn thật trong Luyện tự do để app nghe đàn. ') + 'Đi lên rồi đi xuống, 2 lượt.';
+}
+function seqInput(m, n) {
+  if (!SQ || current !== 'seq') { if (n) play(n); return; }
+  if (n && SQ.mode === 'piano') { play(n); return; }
+  const cur = SQ.targets[SQ.i];
+  if (!cur) return;
+  if (m === C.midi(cur)) {
+    if (SQ.mode !== 'piano') play(cur);
+    SQ.i++;
+    if (SQ.i >= SQ.targets.length) return finishSeq();
+    renderSeq();
+  } else {
+    SQ.errors++;
+    if (n) play(n);
+    const info = $('#qsInfo'); info.className = 'feedback no';
+    info.querySelector('span').textContent = 'Trang vừa đánh ' + heardName(m) + '. Phím cần đánh đang sáng màu xanh.';
+    setTimeout(() => { if (SQ) { info.className = 'feedback'; } }, 1200);
+  }
+}
+function finishSeq() {
+  const { id, after, targets, errors } = SQ;
+  SQ = null; Mic.onNote = null;
+  const r = { score: Math.max(0, targets.length - errors), total: targets.length, missed: [] };
+  recordStep(id, true, r); markDay();
+  if (after.onFinish) after.onFinish(true);
+  showResult(r, { passed: true, passMsg: 'Xong "' + K.STEPS[id].title + '" ✓' + (errors ? ' · bấm nhầm ' + errors + ' lần' : ' · không nhầm lần nào'), again: () => runStep(id, after), next: after.next, back: after.back, backLabel: after.backLabel });
+}
+
+/* ---------- Dòng bước học (dùng ở đảo và theo lớp) ---------- */
+function stepRow(id, after, conceptsSet) {
+  const st = K.STEPS[id];
+  const s = Plan.stepState(id, state.progress, conceptsSet || concepts());
+  const row = document.createElement('div'); row.className = 'step ' + s;
+  const b = document.createElement('button'); b.className = 'steprun';
+  const ic = document.createElement('span'); ic.className = 'sic'; ic.textContent = s === 'done' ? '✓' : stepIcon(st.type);
+  const tx = document.createElement('span'); tx.className = 'stx';
+  const t = document.createElement('b'); t.textContent = st.title; tx.appendChild(t);
+  const sub = document.createElement('small');
+  const p = state.progress[id];
+  sub.textContent = s === 'soon' ? 'Mở ở ' + st.soon : s === 'concept' ? 'Chờ lớp học tới phần này' : s === 'done' ? 'Đã xong' + (p && p.best && st.type === 'drill' ? ' · ' + p.best + '%' : '') : ({ lesson: 'Bài học ngắn', drill: st.count + ' câu' + (st.octave ? ' · đúng cả phím' : ''), sequence: 'Leo thế tay, 2 lượt' })[st.type];
+  tx.appendChild(sub);
+  b.append(ic, tx);
+  b.disabled = s === 'soon';
+  b.onclick = () => { if (s === 'concept') return; runStep(id, after); };
+  row.appendChild(b);
+  if (s === 'concept') {
+    const u = document.createElement('button'); u.className = 'btn ghost small'; u.textContent = 'Mở luôn';
+    u.onclick = () => { if (!state.manualConcepts.includes(st.concept)) state.manualConcepts.push(st.concept); save(); after.refresh && after.refresh(); };
+    row.appendChild(u);
+  }
+  return row;
+}
+
+/* ---------- BẢN ĐỒ ĐẢO ---------- */
+let islandId = 'i1';
+function renderMap() {
+  const box = $('#mapList'); box.replaceChildren();
+  K.ISLANDS.forEach((isl, idx) => {
+    const pr = Plan.islandProgress(isl, state.progress);
+    const b = document.createElement('button'); b.className = 'isl' + (isl.soon ? ' soon' : '') + (pr.total && pr.done === pr.total ? ' full' : '');
+    const num = document.createElement('span'); num.className = 'islnum'; num.textContent = idx + 1;
+    const tx = document.createElement('span'); tx.className = 'stx';
+    const t = document.createElement('b'); t.textContent = isl.name;
+    const sub = document.createElement('small'); sub.textContent = isl.sub + ' · ' + (isl.soon ? 'mở ở ' + isl.soon : pr.done + '/' + pr.total + ' bước');
+    const bar = document.createElement('span'); bar.className = 'pbar'; const fill = document.createElement('i'); fill.style.width = (pr.total ? pr.done / pr.total * 100 : 0) + '%'; bar.appendChild(fill);
+    tx.append(t, sub, bar);
+    b.append(num, tx);
+    b.onclick = () => { islandId = isl.id; go('island'); };
+    box.appendChild(b);
+  });
+}
+function renderIsland() {
+  const isl = K.ISLANDS.find(i => i.id === islandId);
+  $('#islName').textContent = isl.name;
+  $('#islSub').textContent = isl.sub + (isl.soon ? ' · mở ở ' + isl.soon : '');
+  const box = $('#islSteps'); box.replaceChildren();
+  const after = { back: 'island', backLabel: 'Về đảo', refresh: renderIsland };
+  isl.steps.forEach((id, k) => {
+    const nextId = isl.steps.slice(k + 1).find(s => Plan.stepState(s, state.progress, concepts()) === 'open');
+    box.appendChild(stepRow(id, { ...after, next: nextId ? { label: 'Bước tiếp →', fn: () => runStep(nextId, { ...after }) } : null }));
+  });
+}
+
+/* ---------- THEO LỚP ---------- */
+function renderClass() {
+  const list = $('#clsTopics'); list.replaceChildren();
+  K.CLASS_TOPICS.forEach(t => {
+    const b = document.createElement('button'); b.className = 'topic'; b.setAttribute('aria-pressed', String(t.id === state.classTopic));
+    const bk = document.createElement('small'); bk.textContent = t.book + (t.soon ? ' · ' + t.soon : '');
+    const tt = document.createElement('b'); tt.textContent = t.title;
+    b.append(bk, tt);
+    b.onclick = () => { state.classTopic = t.id; save(); renderClass(); };
+    list.appendChild(b);
+  });
+  const t = K.CLASS_TOPICS.find(x => x.id === state.classTopic);
+  $('#clsNow').textContent = t.book + ' · ' + t.title;
+  const box = $('#clsSteps'); box.replaceChildren();
+  const cset = new Set([...concepts(), ...(t.unlocks || [])]);
+  const after = { back: 'class', backLabel: 'Về Theo lớp', refresh: renderClass };
+  t.steps.forEach(id => box.appendChild(stepRow(id, after, cset)));
+  const pool = Plan.topicPool(t.id);
+  $('#clsMix').hidden = !pool.length;
+  $('#clsMix').onclick = () => { flowBack = 'class'; audio(); startDrill({ title: 'Luyện tổng hợp: ' + t.title, pool: pool.map(parseKey), count: 15, octave: true, onDone: r => showResult(r, { again: () => $('#clsMix').onclick(), back: 'class', backLabel: 'Về Theo lớp' }) }); };
+}
+
+/* ---------- NHIỆM VỤ HÔM NAY ---------- */
+function todayPlan() { const k = Plan.dayKey(); return state.today && state.today.date === k ? state.today : null; }
+function makePlan(min) {
+  state.settings.minutes = min;
+  state.today = { date: Plan.dayKey(), minutes: min, tasks: Plan.buildPlan(min, { progress: state.progress, concepts: concepts(), classTopic: state.classTopic }) };
+  save();
+}
+function taskTitle(t) {
+  if (t.kind === 'review') return { title: 'Ôn nốt hay sai', sub: t.count + ' câu · khởi động', icon: '🔁' };
+  if (t.kind === 'mix') return { title: t.track === 'class' ? 'Luyện tổng hợp bài trên lớp' : 'Ôn những gì đã học', sub: t.count + ' câu', icon: '🎯', tag: t.track };
+  const st = K.STEPS[t.id];
+  return { title: st.title, sub: ({ lesson: 'Bài học ngắn', drill: st.count + ' câu', sequence: 'Leo thế tay' })[st.type], icon: stepIcon(st.type), tag: t.track };
+}
+function reviewPoolNow(n) {
+  let keys = Plan.reviewPool(state.srs, Plan.dayKey(), n);
+  if (keys.length < 4) keys = [...new Set([...keys, ...Plan.learnedPool(state.progress)])];
+  if (keys.length < 4) keys = [...new Set([...keys, ...K.STEPS['s1-do-read'].pool, ...K.STEPS['s1-left-do'].pool])];
+  return keys.map(parseKey);
+}
+function runTask(idx) {
+  const plan = todayPlan(); if (!plan) return;
+  const t = plan.tasks[idx];
+  const nextIdx = plan.tasks.findIndex((x, j) => j > idx && !x.done);
+  const after = {
+    back: 'today', backLabel: 'Về nhiệm vụ',
+    onFinish: () => { t.done = true; save(); },
+    next: nextIdx >= 0 ? { label: 'Nhiệm vụ tiếp →', fn: () => runTask(nextIdx) } : null,
+  };
+  flowBack = 'today'; audio();
+  if (t.kind === 'step') return runStep(t.id, after);
+  const title = t.kind === 'review' ? 'Ôn nốt hay sai' : taskTitle(t).title;
+  const pool = t.kind === 'review' ? reviewPoolNow(t.count) : t.pool.map(parseKey);
+  startDrill({ title, pool, count: t.count, octave: pool.some(q => q.note.acc), onDone: r => { after.onFinish(); showResult(r, { again: () => runTask(idx), next: after.next, back: 'today', backLabel: 'Về nhiệm vụ' }); } });
+}
+function renderToday() {
+  const k = Plan.dayKey(), sk = Plan.streak(state.days, k);
+  $('#tdStreak').textContent = (sk.count ? '🔥 ' + sk.count + ' ngày liền' : '🔥 Hôm nay bắt đầu chuỗi ngày') + (sk.restLeft ? ' · còn 1 ngày nghỉ tuần này' : ' · đã dùng ngày nghỉ tuần này');
+  const plan = todayPlan();
+  $('#tdPick').hidden = !!plan; $('#tdPlan').hidden = !plan;
+  const t = K.CLASS_TOPICS.find(x => x.id === state.classTopic);
+  $('#tdClass').textContent = 'Trên lớp: ' + t.book + ' · ' + t.title;
+  if (!plan) return;
+  $('#tdMin').textContent = plan.minutes + ' phút';
+  const box = $('#tdTasks'); box.replaceChildren();
+  plan.tasks.forEach((tk, i) => {
+    const info = taskTitle(tk);
+    const row = document.createElement('div'); row.className = 'step ' + (tk.done ? 'done' : 'open');
+    const b = document.createElement('button'); b.className = 'steprun';
+    const ic = document.createElement('span'); ic.className = 'sic'; ic.textContent = tk.done ? '✓' : info.icon;
+    const tx = document.createElement('span'); tx.className = 'stx';
+    const tt = document.createElement('b'); tt.textContent = info.title;
+    const sub = document.createElement('small'); sub.textContent = (info.tag === 'class' ? 'Theo lớp · ' : info.tag === 'road' ? 'Lộ trình · ' : '') + info.sub;
+    tx.append(tt, sub); b.append(ic, tx);
+    b.onclick = () => runTask(i);
+    row.appendChild(b); box.appendChild(row);
+  });
+  const left = plan.tasks.filter(x => !x.done).length;
+  $('#tdGo').textContent = left ? (plan.tasks.some(x => x.done) ? 'Làm tiếp' : 'Bắt đầu') : 'Xong hết rồi 🎉';
+  $('#tdGo').disabled = !left;
+  $('#tdDone').hidden = !!left;
+}
+$('#tdGo').onclick = () => { const plan = todayPlan(); const i = plan ? plan.tasks.findIndex(x => !x.done) : -1; if (i >= 0) runTask(i); };
+$('#tdMake').onclick = () => { makePlan(+state.settings.minutes || 10); renderToday(); };
+$('#tdChange').onclick = () => { state.today = null; save(); renderToday(); };
+bindSeg('minutes', () => String(state.settings.minutes || 10), v => { state.settings.minutes = +v; });
+
+function renderHomeToday() {
+  const sk = Plan.streak(state.days, Plan.dayKey());
+  $('#hStreak').textContent = sk.count ? '🔥 ' + sk.count + ' ngày liền' : 'Chưa có chuỗi ngày nào, hôm nay bắt đầu nhé';
+  const plan = todayPlan();
+  const done = plan ? plan.tasks.filter(t => t.done).length : 0;
+  $('#hToday').textContent = plan ? 'Nhiệm vụ hôm nay: ' + done + '/' + plan.tasks.length + (done === plan.tasks.length ? ' · xong!' : '') : 'Chọn 5, 10, 20 hoặc 30 phút, app xếp bài cho Trang.';
+  const t = K.CLASS_TOPICS.find(x => x.id === state.classTopic);
+  $('#hClassSub').textContent = t.book + ' · ' + t.title;
+  const weak = Plan.weakCount(state.srs, Plan.dayKey());
+  $('#hWeak').textContent = weak ? weak + ' nốt cần ôn' : '';
+}
+
+/* ---------- SAO LƯU ---------- */
+const encodeBackup = () => btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+function decodeBackup(s) {
+  s = s.trim();
+  try { return JSON.parse(s); } catch {}
+  return JSON.parse(decodeURIComponent(escape(atob(s.replace(/\s+/g, '')))));
+}
+$('#bMake').onclick = async () => {
+  const code = encodeBackup();
+  $('#bCode').value = code; $('#bCode').hidden = false;
+  try { await navigator.clipboard.writeText(code); $('#bMsg').textContent = 'Đã chép mã sao lưu. Dán vào Ghi chú hoặc gửi cho chính mình để cất giữ.'; }
+  catch { $('#bCode').select(); $('#bMsg').textContent = 'Mã sao lưu đã được chọn sẵn, bấm Chép để lưu lại.'; }
+};
+$('#bFile').onclick = () => {
+  const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'dao-not-nhac-' + Plan.dayKey() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  $('#bMsg').textContent = 'Nếu không thấy file tải về, dùng nút Chép mã sao lưu.';
+};
+let restoreArmed = false;
+$('#bRestore').onclick = () => {
+  let data;
+  try { data = decodeBackup($('#bIn').value); if (!data || !data.settings) throw 0; }
+  catch { $('#bMsg').textContent = 'Mã này không đọc được. Kiểm tra lại đã dán đủ mã chưa.'; return; }
+  if (!restoreArmed) { restoreArmed = true; $('#bRestore').textContent = 'Bấm lần nữa để thay toàn bộ tiến độ'; return; }
+  state = migrate(data); save(); restoreArmed = false;
+  $('#bRestore').textContent = 'Khôi phục'; $('#bIn').value = '';
+  $('#bMsg').textContent = 'Đã khôi phục tiến độ.';
+};
+async function askPersist() {
+  try { if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch {}
+}
+
 /* ---------- Làm mới nhãn khi đổi cài đặt ---------- */
 function refreshLabels() {
   if (eKb) eKb.labels(state.settings.names);
@@ -1266,7 +1978,10 @@ function refreshLabels() {
   if (current === 'hands') renderHands();
 }
 
+// móc kiểm thử (chỉ đọc)
+window.__daonot = { get G() { return G; }, get SQ() { return SQ; }, get state() { return state; } };
 renderSetupNote();
+askPersist();
 go('home');
 document.fonts && document.fonts.ready.then(() => { if (current === 'explore') renderExplore(); if (current === 'hands') renderHands(); });
 })();

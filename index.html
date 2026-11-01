@@ -179,6 +179,13 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
 .timebar i { background: var(--bad) !important; transition: none !important; }
 .tapcol { cursor: pointer; }
 .tapcol:hover { fill: rgba(242, 169, 0, .12); }
+.micpill { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 20; display: flex; align-items: center; gap: 8px; max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 700; font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.18); cursor: default; }
+.micpill i { width: 12px; height: 12px; flex: none; border-radius: 50%; background: var(--line); transition: background .08s; }
+.micpill i.live { background: var(--good); }
+.micpill.dead { background: var(--bad); color: #fff; border-color: var(--bad); cursor: pointer; }
+.micpill.dead i { background: #fff; }
+body.haspill .app { padding-bottom: 76px; }
+#gMic, #arMic { display: none !important; }
 .gcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 4px 10px 10px 4px; display: flex; flex-direction: column; gap: 4px; }
 .sic.big { width: 48px; height: 48px; font-size: 24px; }
 .stars { letter-spacing: 2px; }
@@ -233,7 +240,7 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 5 · bản 5.0</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 5 · bản 5.1</small></h1>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
@@ -477,7 +484,8 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
       <h3>4 · Loa khi micro mở</h3>
       <p class="muted" style="margin:0">Bấm hai nút, so tiếng to nhỏ bằng tai.</p>
       <div class="row"><button class="btn ghost" id="mPlayOff">Phát Đô (micro tắt)</button><button class="btn ghost" id="mPlayOn">Phát Đô (micro mở)</button></div>
-      <p class="muted" style="margin:0">Bản 2.4: khi micro mở, app tạm tắt micro trong lúc phát tiếng rồi tự bật lại, để tiếng không bị nhỏ. Trang thử lại và chọn kết quả bên dưới.</p>
+      <p class="muted" style="margin:0">Từ bản 5.1, micro luôn mở trong lúc chơi và app tự đẩy tiếng to lên để bù. Nếu tiếng vẫn nhỏ quá, bật tùy chọn dưới (micro sẽ tạm tắt mỗi lần app phát tiếng, nhưng dễ bị ngắt hơn).</p>
+      <div class="switch"><div><b>Tạm tắt micro khi app phát tiếng</b></div><button class="toggle" role="switch" id="tMicPause" aria-label="Tạm tắt micro khi app phát tiếng"></button></div>
       <div class="seg" data-opt="loud"><button data-v="same">Tiếng như nhau</button><button data-v="quieter">Tiếng nhỏ đi</button><button data-v="silent">Không nghe gì</button></div>
     </div>
     <div class="card">
@@ -514,10 +522,11 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
       <button class="btn ghost" id="bRestore">Khôi phục</button>
       <div class="muted" id="bMsg" role="status"></div>
     </div>
-    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 5 · bản 5.0 · dữ liệu phiên bản 2</p>
+    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 5 · bản 5.1 · dữ liệu phiên bản 2</p>
   </section>
 </div>
 
+<button class="micpill" id="micPill" hidden aria-live="polite"><i id="micDot"></i><span id="micPillText"></span></button>
 <script>// Lõi nốt nhạc — logic thuần, không đụng giao diện. Dùng được cả trong trình duyệt và Node (để kiểm tra).
 (function (root) {
   const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -1050,7 +1059,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 
 /* ---------- Lưu trữ (có số phiên bản) ---------- */
 const STORE_KEY = 'daonot';
-const DEFAULTS = { schema: 2, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause: true, sens: 'cao', minutes: 10 },
+const DEFAULTS = { schema: 2, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause2: false, sens: 'cao', minutes: 10 },
   setup: { clef: 'treble', range: 'inside', answer: 'names', count: '10' },
   hands: { pos: 'do', hand: 'right' }, mic: { calib: { semis: 0 } },
   srs: {}, progress: {}, days: {}, classTopic: 'c18', manualConcepts: [], today: null,
@@ -1078,14 +1087,18 @@ function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); 
 
 /* ---------- Âm thanh ---------- */
 function setSession(t) { try { if (navigator.audioSession && navigator.audioSession.type !== t) navigator.audioSession.type = t; } catch {} }
-let ac = null, master = null;
+let ac = null, master = null, outGain = null;
+// Khi micro mở, iPhone hạ tiếng loa: app tự đẩy tiếng to lên để bù
+const BOOST = 2.6;
+function setBoost(on) { if (outGain && ac) outGain.gain.setTargetAtTime(on ? BOOST : 0.9, ac.currentTime, 0.05); }
 function audio() {
   if (!ac) {
     if (!(Mic.on || Mic.starting)) setSession('playback');
     ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createDynamicsCompressor();
-    const g = ac.createGain(); g.gain.value = 0.9;
-    master.connect(g); g.connect(ac.destination);
+    outGain = ac.createGain(); outGain.gain.value = Mic.on ? BOOST : 0.9;
+    const limit = ac.createDynamicsCompressor(); limit.threshold.value = -3; limit.ratio.value = 20;
+    master.connect(outGain); outGain.connect(limit); limit.connect(ac.destination);
   }
   if (ac.state === 'suspended') ac.resume();
   return ac;
@@ -1094,7 +1107,7 @@ function play(n, when = 0, force = false) {
   if (!state.settings.sound && !force) return;
   const dur = Math.max(0.8, 2.2 - (C.midi(n) - 48) * 0.03);
   // Micro đang mở thì iPhone hạ tiếng loa: tạm tắt micro trong lúc phát (nếu Trang chọn cách này)
-  const lead = Mic.on && state.settings.micPause !== false ? Mic.pauseFor(when + Math.min(dur, 1.3) + 0.25) : 0;
+  const lead = Mic.on && state.settings.micPause2 ? Mic.pauseFor(when + Math.min(dur, 1.3) + 0.25) : 0;
   const a = audio(), t = a.currentTime + 0.02 + lead + when, f = C.freq(n);
   Mic.gate(lead + when + Math.min(dur, 1.3));
   const out = a.createGain(); out.connect(master);
@@ -1240,12 +1253,27 @@ function buildKeyboard(root, onPress) {
   }
   root.style.width = (4 + whiteIndex * (KW + 2)) + 'px';
   root.style.setProperty('--kw', KW + 'px');
+  // Chỉ tính là bấm phím khi chạm rồi nhấc tay mà không kéo. Kéo ngang để cuộn bàn phím thì không bấm.
+  let press = null;
+  const cancel = () => { if (press) press.k.classList.remove('down'); press = null; };
   root.addEventListener('pointerdown', e => {
     const k = e.target.closest('.key'); if (!k) return;
-    e.preventDefault();
-    const info = keys.get(k.dataset.id);
-    k.classList.add('down'); setTimeout(() => k.classList.remove('down'), 180);
-    onPress(info.note, k);
+    cancel();
+    press = { id: e.pointerId, k, x: e.clientX, y: e.clientY, sx: root.parentElement ? root.parentElement.scrollLeft : 0 };
+    k.classList.add('down');
+  });
+  root.addEventListener('pointermove', e => {
+    if (!press || e.pointerId !== press.id) return;
+    if (Math.abs(e.clientX - press.x) > 10 || Math.abs(e.clientY - press.y) > 14) cancel();
+  });
+  root.addEventListener('pointercancel', cancel);
+  root.addEventListener('pointerleave', e => { if (press && e.pointerType === 'mouse') cancel(); });
+  if (root.parentElement) root.parentElement.addEventListener('scroll', () => { if (press && Math.abs(root.parentElement.scrollLeft - press.sx) > 4) cancel(); }, { passive: true });
+  root.addEventListener('pointerup', e => {
+    if (!press || e.pointerId !== press.id) return;
+    const k = press.k; cancel();
+    k.classList.add('down'); setTimeout(() => k.classList.remove('down'), 160);
+    onPress(keys.get(k.dataset.id).note, k);
   });
   root.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const k = e.target.closest('.key'); if (k) { e.preventDefault(); onPress(keys.get(k.dataset.id).note, k); } } });
   return {
@@ -1275,10 +1303,11 @@ function buildKeyboard(root, onPress) {
 const TITLES = { home: 'Đảo Nốt Nhạc', setup: 'Luyện tự do', game: 'Luyện đọc nốt', result: 'Kết quả', explore: 'Phím & khuông', hands: 'Thế tay', mic: 'Micro & hiệu chỉnh', settings: 'Cài đặt',
   today: 'Nhiệm vụ hôm nay', games: 'Sảnh trò chơi', rhythm: 'Nhạc trưởng', spot: 'Tìm nốt sai', interval: 'Thám tử quãng', arena: 'Trò chơi', match: 'Ghép đôi Đô–C', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
 const BACK = { setup: 'home', games: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
-const VERSION = 'Giai đoạn 5 · bản 5.0';
+const VERSION = 'Giai đoạn 5 · bản 5.1';
 let current = 'home';
 // inFlow = màn hình nằm trong một lượt tập (trò chơi, bài học, kết quả): nút quay lại về nơi bắt đầu lượt đó
 function go(v, inFlow) {
+  if (!['game', 'seq', 'arena'].includes(v)) wantMic(false);
   if (v !== 'game' && v !== 'mic' && v !== 'seq' && v !== 'arena') Mic.stop();
   if (current === 'arena' && v !== 'arena' && AR) { AR.running = false; AR = null; }
   Mic.onNote = null; Mic.onFrame = null;
@@ -1327,7 +1356,7 @@ function bindToggle(btn, key) {
   btn.onclick = () => { state.settings[key] = !state.settings[key]; save(); sync(); refreshLabels(); };
   sync();
 }
-bindToggle($('#tFinger'), 'finger'); bindToggle($('#tSound'), 'sound');
+bindToggle($('#tFinger'), 'finger'); bindToggle($('#tMicPause'), 'micPause2'); bindToggle($('#tSound'), 'sound');
 
 /* ---------- KHÁM PHÁ ---------- */
 let eKb = null, eNote = C.parse('C4');
@@ -1394,10 +1423,7 @@ const hidesLabels = () => !G || G.mode !== 'names';
 async function startDrill(cfg) {
   let mode = cfg.mode || state.setup.answer;
   if (cfg.octave && mode === 'names') mode = 'keys'; // bài cần đúng cả phím thì không trả lời bằng nút tên
-  if (mode === 'piano') {
-    const r = await Mic.start();
-    if (!r.ok) mode = 'keys';
-  }
+  if (mode === 'piano') await Mic.start();
   G = { ...cfg, total: cfg.count, mode, i: 0, score: 0, queue: [], missed: new Map(), last: null, locked: false, q: null, keySig: cfg.keySig || 0 };
   lastDrill = cfg;
   if (!gKb) gKb = buildKeyboard($('#gKb'), (n) => answerKey(n));
@@ -1405,9 +1431,8 @@ async function startDrill(cfg) {
   buildAnswers();
   $('#gTitle').textContent = cfg.title || 'Gọi tên nốt';
   $('#gSelf').hidden = mode !== 'self';
-  $('#gMic').hidden = mode !== 'piano';
   go('game', true);
-  if (mode === 'piano') { Mic.onNote = gameNote; Mic.onFrame = gameFrame; }
+  if (mode === 'piano') { Mic.onNote = gameNote; Mic.onFrame = gameFrame; wantMic(true); }
   nextQ();
 }
 function startFree() {
@@ -1639,110 +1664,138 @@ const SENS = {
   ratcao: { detect: { minRms: 0.001 }, listen: { minRms: 0.0015, floorMul: 2.0, minClarity: 0.75 }, agc: true, label: 'Rất cao' },
 };
 const sens = () => SENS[state.settings.sens] || SENS.cao;
+const MIC_OPTS = () => ({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: sens().agc } });
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(Object.assign(new Error('timeout'), { name: 'Timeout' })), ms))]);
 const Mic = {
-  on: false, onNote: null, onFrame: null, wake: null,
-  async start() {
-    if (this.on) return { ok: true };
+  on: false, wanted: false, failed: false, starting: null, onNote: null, onFrame: null, wake: null, restarts: [], heard: '',
+  start() {
+    if (this.on) return Promise.resolve({ ok: true });
+    if (this.starting) return this.starting;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      state.mic.result = 'không có'; state.mic.error = 'unsupported'; save(); return { ok: false, error: 'unsupported' };
+      state.mic.result = 'không có'; state.mic.error = 'unsupported'; save(); return Promise.resolve({ ok: false, error: 'unsupported' });
     }
-    try {
-      this.starting = true;
-      setSession('play-and-record');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: sens().agc } });
-      const a = audio();
-      try { if (a.state !== 'running') await a.resume(); } catch {}
-      Object.assign(this, { stream, buf: new Float32Array(4096), on: true, starting: false, L: Pitch.createListener(sens().listen), maxRms: 0, started: performance.now(), healed: false });
-      this.wire();
-      this.timer = setInterval(() => this.tick(), 40);
-      this.lock();
-      state.mic.result = 'mở được'; delete state.mic.error; save();
-      return { ok: true };
-    } catch (err) {
-      this.starting = false;
-      setSession('playback');
-      state.mic.result = 'bị chặn'; state.mic.error = err.name; save();
-      return { ok: false, error: err.name };
-    }
+    this.starting = (async () => {
+      try {
+        setSession('play-and-record');
+        const stream = await withTimeout(navigator.mediaDevices.getUserMedia(MIC_OPTS()), 10000);
+        const a = audio();
+        try { if (a.state !== 'running') await withTimeout(a.resume(), 2000); } catch {}
+        Object.assign(this, { stream, buf: new Float32Array(4096), on: true, failed: false, L: Pitch.createListener(sens().listen), zeroSince: 0, paused: false });
+        stream.getAudioTracks().forEach(t => { t.onended = () => { if (this.stream === stream) this.restart('micro bị ngắt'); }; });
+        this.wire();
+        clearInterval(this.timer); this.timer = setInterval(() => this.tick(), 40);
+        this.lock(); setBoost(true);
+        state.mic.result = 'mở được'; delete state.mic.error; save();
+        return { ok: true };
+      } catch (err) {
+        setSession('playback');
+        this.failed = true;
+        state.mic.result = 'bị chặn'; state.mic.error = err.name || String(err); save();
+        return { ok: false, error: err.name || String(err) };
+      } finally { this.starting = null; renderMicPill(); }
+    })();
+    renderMicPill();
+    return this.starting;
   },
-  // Tạm tắt micro để loa về âm lượng bình thường, tự bật lại sau `sec` giây. Trả về độ trễ trước khi phát (giây).
+  // gỡ luồng micro hiện tại, giữ nguyên các hàm nghe (onNote, onFrame)
+  teardown() {
+    clearInterval(this.timer); clearTimeout(this.resumeTimer);
+    if (this.stream) this.stream.getTracks().forEach(t => { t.onended = null; t.stop(); });
+    try { if (this.src) this.src.disconnect(); if (this.sink) this.sink.disconnect(); } catch {}
+    this.stream = null; this.src = null; this.an = null; this.sink = null; this.on = false; this.paused = false;
+  },
+  stop() {
+    if (!this.on && !this.paused) { renderMicPill(); return; }
+    this.teardown(); this.L = null;
+    this.unlock(); setSession('playback'); setBoost(false);
+    if (this.onFrame) this.onFrame(null);
+    renderMicPill();
+  },
+  // Micro bị ngắt (iPhone đổi luồng âm thanh, có cuộc gọi, thoát app…): dựng lại từ đầu, tối đa 3 lần mỗi 30 giây
+  async restart(reason) {
+    if (this.starting) return;
+    const now = performance.now();
+    this.restarts = this.restarts.filter(t => now - t < 30000);
+    state.mic.restarts = (state.mic.restarts || 0) + 1; state.mic.lastRestart = reason; save(); this.heard = '';
+    this.teardown();
+    if (this.restarts.length >= 3) { this.failed = true; setSession('playback'); renderMicPill(); return; }
+    this.restarts.push(now);
+    try { if (ac) await ac.close(); } catch {}
+    ac = null; master = null; outGain = null;
+    const r = await this.start();
+    if (r.ok && this.L) this.L.gate(performance.now() / 1000 + 0.3);
+  },
+  // (Tùy chọn, mặc định tắt) tạm tắt micro trong lúc app phát tiếng
   pauseFor(sec) {
     const until = performance.now() + sec * 1000;
     let lead = 0;
-    if (!this.paused) {
-      this.paused = true; lead = 0.15;
-      clearInterval(this.timer);
-      this.stream.getTracks().forEach(t => t.stop());
-      try { this.src.disconnect(); } catch {}
+    if (!this.paused && this.on) {
+      lead = 0.15;
+      const L = this.L; this.teardown(); this.L = L; this.paused = true;
       setSession('playback');
     }
     this.resumeAt = Math.max(this.resumeAt || 0, until);
     clearTimeout(this.resumeTimer);
-    this.resumeTimer = setTimeout(() => this.resume(), Math.max(0, this.resumeAt - performance.now()));
+    this.resumeTimer = setTimeout(() => { if (this.paused) { this.paused = false; this.restarts = []; this.restart('bật lại sau khi phát tiếng'); } }, Math.max(0, this.resumeAt - performance.now()));
     return lead;
-  },
-  async resume() {
-    if (!this.on || !this.paused) return;
-    try {
-      setSession('play-and-record');
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: sens().agc } });
-      this.paused = false; this.resumeAt = 0;
-      this.wire();
-      this.L.reset(); this.L.gate(performance.now() / 1000 + 0.2);
-      this.timer = setInterval(() => this.tick(), 40);
-    } catch (err) {
-      this.paused = false; this.on = false; this.L = null; this.unlock(); setSession('playback');
-      if (this.onFrame) this.onFrame(null);
-    }
-  },
-  stop() {
-    if (!this.on) return;
-    clearTimeout(this.resumeTimer);
-    if (this.paused) { this.paused = false; this.on = false; this.L = null; this.unlock(); setSession('playback'); if (this.onFrame) this.onFrame(null); return; }
-    clearInterval(this.timer);
-    this.stream.getTracks().forEach(t => t.stop());
-    try { this.src.disconnect(); } catch {}
-    this.on = false; this.L = null;
-    this.unlock(); setSession('playback');
-    if (this.onFrame) this.onFrame(null);
   },
   // Safari chỉ chạy các nút âm thanh có nối ra loa, nên nối thêm một nhánh câm (âm lượng 0) ra loa.
   wire() {
-    try { if (this.src) this.src.disconnect(); if (this.sink) this.sink.disconnect(); } catch {}
     const a = audio();
     this.src = a.createMediaStreamSource(this.stream);
     this.an = a.createAnalyser(); this.an.fftSize = 4096;
     this.sink = a.createGain(); this.sink.gain.value = 0;
     this.src.connect(this.an); this.an.connect(this.sink); this.sink.connect(a.destination);
   },
-  // Nếu 1,5 giây đầu micro chỉ trả về im lặng tuyệt đối: dựng lại bộ âm thanh mới rồi nối lại.
-  async rebuild() {
-    this.healed = true; state.mic.healed = true; save();
-    try { await ac.close(); } catch {}
-    ac = null; master = null;
-    const a = audio();
-    try { await a.resume(); } catch {}
-    this.wire();
-  },
   tick() {
-    if (!this.an) return;
+    if (!this.an || !ac) return;
+    const now = performance.now();
+    if (ac.state !== 'running' && now - (this.resumeTry || 0) > 1000) { this.resumeTry = now; ac.resume().catch(() => {}); }
     this.an.getFloatTimeDomainData(this.buf);
     const fr = Pitch.detect(this.buf, ac.sampleRate, sens().detect);
-    this.maxRms = Math.max(this.maxRms, fr.rms);
     state.mic.maxRms = Math.max(state.mic.maxRms || 0, fr.rms);
-    if (!this.healed && this.maxRms < 1e-6 && performance.now() - this.started > 1500) { this.rebuild(); return; }
-    const m = this.L.feed(fr, performance.now() / 1000);
+    // micro "chết": im lặng tuyệt đối (kể cả tiếng ồn phòng cũng không có) hoặc luồng bị tắt tiếng quá 2 giây
+    const tr = this.stream && this.stream.getAudioTracks()[0];
+    const dead = fr.rms < 1e-6 || !tr || tr.readyState === 'ended' || tr.muted;
+    if (dead) { this.zeroSince = this.zeroSince || now; if (now - this.zeroSince > 2000) { this.zeroSince = 0; this.restart(fr.rms < 1e-6 ? 'không có tín hiệu' : 'luồng micro bị tắt'); return; } }
+    else this.zeroSince = 0;
+    pillLevel(fr.rms);
+    const m = this.L.feed(fr, now / 1000);
     if (this.onFrame) this.onFrame(fr);
-    if (m !== null && this.onNote) this.onNote(m - (state.mic.calib.semis || 0), fr.f);
+    if (m !== null) {
+      const mm = m - (state.mic.calib.semis || 0);
+      this.heard = heardName(mm); renderMicPill();
+      if (this.onNote) this.onNote(mm, fr.f);
+    }
   },
   gate(sec) { if (this.L) this.L.gate(performance.now() / 1000 + sec); },
   async lock() { try { if ('wakeLock' in navigator) this.wake = await navigator.wakeLock.request('screen'); } catch {} },
   unlock() { try { if (this.wake) this.wake.release(); } catch {} this.wake = null; },
 };
+// Ra khỏi app thì tắt micro; quay lại thì tự bật lại nếu đang chơi bằng đàn thật
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) Mic.stop();
-  else if (Mic.on) Mic.lock();
+  if (document.hidden) { if (Mic.on) Mic.stop(); }
+  else if (Mic.wanted) { Mic.restarts = []; Mic.start(); }
 });
+// Thanh trạng thái micro trong lúc chơi bằng đàn thật
+function renderMicPill() {
+  const p = $('#micPill'); if (!p) return;
+  const show = Mic.wanted;
+  p.hidden = !show; document.body.classList.toggle('haspill', !!show);
+  if (!show) return;
+  const txt = $('#micPillText');
+  p.classList.toggle('dead', !Mic.on && !Mic.starting);
+  if (Mic.on) txt.textContent = 'Đang nghe đàn' + (Mic.heard ? ' · vừa nghe ' + Mic.heard : '');
+  else if (Mic.starting) txt.textContent = 'Đang mở micro…';
+  else txt.textContent = 'Micro đang tắt · chạm để bật lại';
+}
+let pillLast = 0;
+function pillLevel(rms) {
+  const now = performance.now(); if (now - pillLast < 80) return; pillLast = now;
+  const d = $('#micDot'); if (d) d.classList.toggle('live', rms > sens().listen.minRms);
+}
+function wantMic(on) { Mic.wanted = on; Mic.heard = ''; renderMicPill(); }
+
 
 function renderHomeBanner() {
   const b = $('#homeBanner');
@@ -1751,6 +1804,7 @@ function renderHomeBanner() {
   else b.hidden = true;
 }
 
+$('#micPill').onclick = async () => { if (Mic.on || Mic.starting) return; Mic.restarts = []; Mic.failed = false; const keep = [Mic.onNote, Mic.onFrame]; await Mic.start(); [Mic.onNote, Mic.onFrame] = keep; };
 /* ---------- MÀN HÌNH MICRO & HIỆU CHỈNH ---------- */
 let calib = null, micTest = null;
 function enterMic() {
@@ -1879,13 +1933,13 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · ban 5.0',
+    'Dao Not Nhac · ban 5.1',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),
     'Bài test: ' + (m.test ? m.test.score + '/' + m.test.total + (m.test.miss.length ? ' · lệch: ' + m.test.miss.join(', ') : '') : 'chưa làm'),
     'Độ nhạy: ' + sens().label,
-    'Tạm tắt micro khi phát: ' + (state.settings.micPause !== false ? 'có' : 'không') + ' · lần thử loa: bản 2.4',
+    'Tạm tắt micro khi phát: ' + (state.settings.micPause2 ? 'có' : 'không (bù âm lượng)') + ' · tự bật lại micro: ' + (state.mic.restarts || 0) + ' lần' + (state.mic.lastRestart ? ' (' + state.mic.lastRestart + ')' : ''),
     'Loa khi micro mở: ' + ({ same: 'như nhau', quieter: 'nhỏ đi', silent: 'không nghe' }[m.loud] || 'chưa thử'),
     'Bỏ qua nút im lặng: ' + ('audioSession' in navigator ? 'có' : 'không'),
     'Giữ màn hình sáng: ' + ('wakeLock' in navigator ? 'có' : 'không'),
@@ -2012,7 +2066,7 @@ function startSeq(id, after) {
 }
 async function startPhrases(cfg) {
   let mode = cfg.mode || (state.setup.answer === 'piano' ? 'piano' : 'keys');
-  if (mode === 'piano') { const r = await Mic.start(); if (!r.ok) mode = 'keys'; }
+  if (mode === 'piano') await Mic.start();
   SQ = { ...cfg, p: 0, i: 0, errors: 0, mode, total: cfg.phrases.reduce((a, ph) => a + ph.notes.length, 0), done: 0, missed: [], hearts: cfg.boss ? cfg.boss.hearts : 0 };
   $('#qsBoss').hidden = !cfg.boss;
   if (!qsKb) qsKb = buildKeyboard($('#qsKb'), n => seqInput(C.midi(n), n));
@@ -2020,7 +2074,7 @@ async function startPhrases(cfg) {
   $('#qsTitle').textContent = cfg.title;
   go('seq', true);
   $('#title').firstChild.textContent = cfg.header || TITLES.seq;
-  if (mode === 'piano') { Mic.onNote = m => seqInput(m); Mic.onFrame = null; }
+  if (mode === 'piano') { Mic.onNote = m => seqInput(m); Mic.onFrame = null; wantMic(true); }
   renderSeq(true);
 }
 function renderSeq(newPhrase) {
@@ -2448,8 +2502,7 @@ function startArena(game, pool) {
   arKb.labels('off');
   go('arena', true);
   (async () => {
-    if (AR.input === 'piano') { const r = await Mic.start(); if (!r.ok) AR.input = 'keys'; else { Mic.onNote = m => arenaInput(m); Mic.onFrame = null; } }
-    $('#arMic').hidden = AR.input !== 'piano';
+    if (AR.input === 'piano') { await Mic.start(); if (!AR) return; Mic.onNote = m => arenaInput(m); Mic.onFrame = null; wantMic(true); }
     try { await document.fonts.load('40px NhacSym'); } catch {}
     if (!AR) return;
     sizeArena(); AR.running = true; AR.last = performance.now();
@@ -3050,6 +3103,7 @@ function refreshLabels() {
 
 // móc kiểm thử (chỉ đọc)
 window.__draw = drawStaves; window.__ac = () => ac;
+window.__mic = Mic;
 window.__daonot = { get RH() { return RH; }, get SP() { return SP; }, get IV() { return IV; }, get G() { return G; }, get SQ() { return SQ; }, get AR() { return AR; }, get MT() { return MT; }, get state() { return state; } };
 renderSetupNote();
 askPersist();

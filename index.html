@@ -186,6 +186,16 @@ textarea.code { width: 100%; box-sizing: border-box; font-family: ui-monospace, 
 .micpill.dead i { background: #fff; }
 body.haspill .app { padding-bottom: 76px; }
 #gMic, #arMic { display: none !important; }
+.inputbtn { min-height: 40px; font-weight: 700; white-space: nowrap; }
+.pstages { display: flex; flex-direction: column; gap: 10px; }
+.prow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.plab { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pbtns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.pstage { border: 1px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 8px 6px; min-height: 56px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.pstage b { font-size: 14px; }
+.pstage small { font-size: 12px; color: var(--muted); }
+.pstage.ok { background: color-mix(in srgb, var(--good) 18%, var(--surface)); border-color: var(--good); }
+.pstage.next { border: 2px solid var(--sun); background: color-mix(in srgb, var(--sun) 18%, var(--surface)); }
 .gcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 4px 10px 10px 4px; display: flex; flex-direction: column; gap: 4px; }
 .sic.big { width: 48px; height: 48px; font-size: 24px; }
 .stars { letter-spacing: 2px; }
@@ -240,7 +250,8 @@ body.haspill .app { padding-bottom: 76px; }
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 5 · bản 5.1</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 5 · bản 5.2</small></h1>
+    <button class="chip inputbtn" id="inputBtn" hidden aria-label="Đổi cách trả lời"></button>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
 
@@ -258,6 +269,7 @@ body.haspill .app { padding-bottom: 76px; }
     <div class="status" id="homeBanner" hidden></div>
     <div class="menu">
       <button class="tile main" data-go="map"><span class="ic">🏝️</span><div><b>Bản đồ 6 đảo</b><br><span>Lộ trình chính, đi từng bước</span></div></button>
+      <button class="tile" data-go="pieces"><span class="ic">📖</span><b>Tập bài trên lớp</b><span>Bài 18 · từng tay rồi hai tay, app nghe và duyệt</span></button>
       <button class="tile" data-go="class"><span class="ic">🎒</span><b>Theo lớp</b><span id="hClassSub"></span></button>
       <button class="tile" data-go="games"><span class="ic">🎮</span><b>Sảnh trò chơi</b><span>10 trò: Phi đội, Mưa nốt, Nhạc trưởng, Boss hợp âm…</span></button>
       <button class="tile" data-go="setup"><span class="ic">🎯</span><b>Luyện tự do</b><span id="hWeak">Gọi tên nốt, chọn khóa và vùng nốt</span></button>
@@ -307,6 +319,7 @@ body.haspill .app { padding-bottom: 76px; }
     </div>
     <div class="label" id="clsNow"></div>
     <div class="steps" id="clsSteps"></div>
+    <button class="btn sun wide" id="clsPiece" hidden></button>
     <button class="btn wide" id="clsMix">🎯 Luyện tổng hợp bài này</button>
   </section>
 
@@ -368,6 +381,28 @@ body.haspill .app { padding-bottom: 76px; }
     <div class="seg" data-opt="mlevel"><button data-v="ten">Đô ↔ C</button><button data-v="khuong">Nốt trên khuông ↔ tên</button></div>
     <div class="muted" id="mtInfo"></div>
     <div class="mgrid" id="mtGrid"></div>
+  </section>
+
+  <!-- TẬP BÀI TRÊN LỚP -->
+  <section id="v-pieces" class="view" hidden style="flex-direction:column;gap:10px">
+    <p class="muted" style="margin:0">Tập trọn bài trong sách: mỗi đoạn 4 ô nhịp tập tay phải, rồi tay trái, rồi hai tay. Xong các đoạn thì đánh cả bài. App nghe đàn và duyệt khi Trang đánh đúng.</p>
+    <div class="islands" id="pcList"></div>
+    <p class="muted" style="margin:0">Muốn thêm bài tiếp theo: chụp thẳng, rõ trang sách gửi Claude.</p>
+  </section>
+  <section id="v-piece" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="card"><h3 id="pzName"></h3><div class="muted" id="pzSub"></div></div>
+    <div class="status ok" id="pzDone" hidden>🎉 Bài này đã duyệt. Thỉnh thoảng đánh lại cả bài hai tay để giữ tay.</div>
+    <button class="btn sun wide" id="pzGo"></button>
+    <div class="pstages" id="pzStages"></div>
+  </section>
+  <section id="v-pplay" class="view" hidden style="flex-direction:column;gap:10px">
+    <div class="label" id="pzTitle"></div>
+    <div class="hud"><span class="label" id="pzNum"></span><div class="bar"><i id="pzBar"></i></div></div>
+    <div class="label" id="pzBars"></div>
+    <div class="sheet" id="pzSheet"></div>
+    <div class="feedback" id="pzInfo"><b></b><span class="muted"></span></div>
+    <div class="kbwrap"><div class="kb" id="pzKb"></div></div>
+    <div class="row"><button class="btn ghost" id="pzListen">▶ Nghe chỗ này</button><button class="btn ghost" id="pzRestart">Làm lại từ đầu</button><button class="btn ghost" id="pzSkip">Bỏ qua nốt này</button></div>
   </section>
 
   <!-- BÀI HỌC -->
@@ -522,7 +557,7 @@ body.haspill .app { padding-bottom: 76px; }
       <button class="btn ghost" id="bRestore">Khôi phục</button>
       <div class="muted" id="bMsg" role="status"></div>
     </div>
-    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 5 · bản 5.1 · dữ liệu phiên bản 2</p>
+    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 5 · bản 5.2 · dữ liệu phiên bản 2</p>
   </section>
 </div>
 
@@ -728,7 +763,26 @@ body.haspill .app { padding-bottom: 76px; }
     };
   }
 
-  const api = { detect, toMidi, createListener };
+  // Kiểm tra một nốt ĐÃ BIẾT có đang vang không (dùng khi đánh hai tay cùng lúc).
+  // spec: phổ tần theo dB (như AnalyserNode.getFloatFrequencyData), binHz = sampleRate / fftSize.
+  // Nốt có mặt khi ít nhất 2 họa âm nhô hẳn lên so với hai bên (cách nửa cung), trong đó có họa âm lẻ (1 hoặc 3)
+  // để không nhầm với nốt cao hơn một quãng tám.
+  function presence(spec, binHz, midi, opt = {}) {
+    const f0 = 440 * Math.pow(2, (midi - 69) / 12), n = spec.length;
+    const at = f => { const b = f / binHz, i = Math.round(b); let m = -Infinity; for (let k = i - 1; k <= i + 1; k++) if (k > 0 && k < n) m = Math.max(m, spec[k]); return m; };
+    let floor = opt.floor;
+    if (floor === undefined) { const xs = Array.from(spec.slice(2, Math.min(n, Math.round(5000 / binHz)))).sort((a, b) => a - b); floor = xs[Math.floor(xs.length / 2)]; }
+    let hits = 0, odd = false, score = 0;
+    for (let h = 1; h <= 4; h++) {
+      const f = h * f0; if (f > binHz * n * 0.9) break;
+      const pk = at(f), nb = Math.max(at(f * Math.pow(2, 0.5 / 12)), at(f * Math.pow(2, -0.5 / 12)));
+      const ok = pk - nb > (opt.contrast || 7) && pk - floor > (opt.above || 18);
+      if (ok) { hits++; if (h === 1 || h === 3) odd = true; score += pk - nb; }
+    }
+    return { present: hits >= 2 && odd, hits, score };
+  }
+
+  const api = { detect, toMidi, createListener, presence };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Pitch = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -1051,6 +1105,93 @@ body.haspill .app { padding-bottom: 76px; }
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Plan = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
+<script>// Bài trên lớp để tập trọn bài: chia đoạn, tập tay phải → tay trái → hai tay, rồi cả bài.
+// Mỗi tay viết theo ô nhịp, ngăn bằng "|". Nốt "C5:q" (q đen, h trắng, w tròn, h. trắng chấm dôi, 8 móc đơn), "r:q" là dấu lặng.
+(function (root) {
+  const C = typeof module !== 'undefined' && module.exports ? require('./core.js') : root.NoteCore;
+  const BEATS = { w: 4, 'h.': 3, h: 2, 'q.': 1.5, q: 1, 8: 0.5 };
+
+  const PIECES = [
+    {
+      id: 'b18', book: 'Bài 18', title: 'Conte de grand-mère', sub: 'Bà kể chuyện', time: [4, 4], bpm: 72, topic: 'c18',
+      note: 'Claude chép từ ảnh sách. Nốt nào khác sách, Trang báo để sửa.',
+      // ngón: tay phải thế Đô cao (1 = Đô 5), tay trái thế Sol (5 = Sol 3)
+      fingers: { right: { C5: 1, D5: 2, E5: 3, F5: 4, G5: 5 }, left: { G3: 5, A3: 4, B3: 3, C4: 2, D4: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16], [17, 20]],
+      right: 'C5:q E5:q E5:q C5:q | D5:q F5:q F5:q D5:q | E5:q G5:q F5:q E5:q | E5:h D5:h | ' +
+             'C5:q E5:q E5:q C5:q | D5:q F5:q F5:q D5:q | E5:q G5:q F5:q D5:q | C5:q E5:q C5:h | ' +
+             'D5:q F5:q F5:q D5:q | E5:q G5:q G5:q E5:q | D5:q F5:q E5:q D5:q | E5:q C5:q G5:h | ' +
+             'C5:q E5:q E5:q C5:q | D5:q F5:q F5:q D5:q | E5:q G5:q F5:q E5:q | D5:q E5:q D5:h | ' +
+             'C5:q E5:q E5:q C5:q | D5:q F5:q F5:q D5:q | E5:q G5:q F5:q D5:q | E5:q D5:q C5:h',
+      left:  'C4:w | G3:w | C4:w | G3:q C4:q B3:q G3:q | ' +
+             'C4:w | G3:w | C4:h G3:h | C4:q G3:q C4:h | ' +
+             'B3:h G3:h | C4:h G3:h | B3:q D4:q C4:q B3:q | C4:q A3:q G3:h | ' +
+             'C4:w | G3:w | C4:h G3:h | B3:q C4:q B3:q G3:q | ' +
+             'C4:w | G3:w | C4:h G3:h | C4:q G3:q C4:h',
+    },
+  ];
+
+  // "C5:q E5:q | …" → [[{note, dur, beat, beats, rest}], …] theo ô nhịp
+  function parseHand(str) {
+    return str.split('|').map(bar => {
+      let beat = 0;
+      return bar.trim().split(/\s+/).filter(Boolean).map(t => {
+        const [n, d] = t.split(':');
+        const beats = BEATS[d];
+        if (!beats) throw new Error('Trường độ sai: ' + t);
+        const ev = { rest: n === 'r', note: n === 'r' ? null : C.parse(n), dur: d.replace('.', ''), dot: d.endsWith('.'), beat, beats, id: n };
+        beat += beats;
+        return ev;
+      });
+    });
+  }
+  function piece(id) {
+    const p = PIECES.find(x => x.id === id);
+    if (!p._parsed) p._parsed = { right: parseHand(p.right), left: parseHand(p.left) };
+    return p;
+  }
+  // Các "lượt đánh" theo thứ tự thời gian: mỗi lượt là các nốt bắt đầu cùng lúc ở các tay đang tập.
+  // hands: ['right'] | ['left'] | ['right','left']; bars: [từ, đến] (tính từ 1)
+  function events(p, hands, bars) {
+    const P = piece(p.id || p)._parsed, out = [];
+    for (let b = bars[0]; b <= bars[1]; b++) {
+      const at = new Map();
+      for (const h of hands) for (const n of P[h][b - 1] || []) {
+        if (n.rest) continue;
+        const k = n.beat;
+        if (!at.has(k)) at.set(k, { bar: b, beat: k, notes: [] });
+        at.get(k).notes.push({ hand: h, note: n.note, id: n.id, beats: n.beats });
+      }
+      [...at.values()].sort((a, c) => a.beat - c.beat).forEach(e => out.push(e));
+    }
+    return out;
+  }
+  // Nốt đang ngân (đã đánh trước, chưa hết trường độ) tại một thời điểm — để không coi là đánh sai
+  function sounding(p, hands, bar, beat) {
+    const P = piece(p.id || p)._parsed, out = [];
+    for (const h of hands) for (const n of P[h][bar - 1] || []) if (!n.rest && n.beat < beat && n.beat + n.beats > beat) out.push(n.note);
+    return out;
+  }
+  // Các bước tập: mỗi đoạn tay phải → tay trái → hai tay; sau đó cả bài từng tay rồi hai tay
+  function stages(p) {
+    p = piece(p.id || p);
+    const out = [];
+    p.sections.forEach(([a, b], i) => {
+      [['right', 'Tay phải'], ['left', 'Tay trái'], ['both', 'Hai tay']].forEach(([h, label]) =>
+        out.push({ key: `s${i + 1}-${h}`, section: i, bars: [a, b], hands: h === 'both' ? ['right', 'left'] : [h], label, title: `Ô nhịp ${a}–${b} · ${label.toLowerCase()}` }));
+    });
+    const all = [1, p.sections[p.sections.length - 1][1]];
+    [['right', 'Tay phải'], ['left', 'Tay trái'], ['both', 'Hai tay']].forEach(([h, label]) =>
+      out.push({ key: `all-${h}`, section: -1, bars: all, hands: h === 'both' ? ['right', 'left'] : [h], label, title: `Cả bài · ${label.toLowerCase()}` }));
+    return out;
+  }
+  // Số lỗi được phép để duyệt: đoạn 4 ô nhịp ≤ 1 lỗi, cả bài ≤ 2 lỗi
+  const allowed = st => st.section === -1 ? 2 : 1;
+
+  const api = { PIECES, BEATS, parseHand, piece, events, sounding, stages, allowed };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Pieces = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
 <script>
 (() => {
 const C = window.NoteCore;
@@ -1059,15 +1200,17 @@ const $$ = s => [...document.querySelectorAll(s)];
 
 /* ---------- Lưu trữ (có số phiên bản) ---------- */
 const STORE_KEY = 'daonot';
-const DEFAULTS = { schema: 2, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause2: false, sens: 'cao', minutes: 10 },
+const DEFAULTS = { schema: 2, settings: { names: 'both', finger: true, sound: true, grade: 'hard', micPause2: false, sens: 'cao', minutes: 10, input: 'keys' },
   setup: { clef: 'treble', range: 'inside', answer: 'names', count: '10' },
   hands: { pos: 'do', hand: 'right' }, mic: { calib: { semis: 0 } },
-  srs: {}, progress: {}, days: {}, classTopic: 'c18', manualConcepts: [], today: null,
+  srs: {}, progress: {}, days: {}, pieces: {}, classTopic: 'c18', manualConcepts: [], today: null,
   games: { pool: 'hoc', input: 'keys', best: {}, acc: {}, mode: {}, matchLevel: 'ten' } };
 function migrate(d) {
   const out = structuredClone(DEFAULTS);
   if (!d || typeof d !== 'object') return out;
-  for (const k of ['settings', 'setup', 'hands', 'mic', 'srs', 'progress', 'days', 'games']) Object.assign(out[k], d[k] || {});
+  for (const k of ['settings', 'setup', 'hands', 'mic', 'srs', 'progress', 'days', 'games', 'pieces']) Object.assign(out[k], d[k] || {});
+  // cách trả lời dùng chung cho cả lộ trình, trò chơi, tập bài (trước đây chỉ nằm trong Luyện tự do)
+  if (!(d.settings && d.settings.input)) out.settings.input = (out.setup.answer === 'piano' || out.mic.result === 'mở được') ? 'piano' : (out.setup.answer || 'keys');
   for (const k of ['classTopic', 'manualConcepts', 'today']) if (d[k] !== undefined) out[k] = d[k];
   // phiên bản 1 → 2: thống kê nốt cũ chuyển thành dữ liệu ôn tập
   if ((d.schema || 1) < 2 && d.stats && d.stats.notes) {
@@ -1301,14 +1444,14 @@ function buildKeyboard(root, onPress) {
 
 /* ---------- Điều hướng ---------- */
 const TITLES = { home: 'Đảo Nốt Nhạc', setup: 'Luyện tự do', game: 'Luyện đọc nốt', result: 'Kết quả', explore: 'Phím & khuông', hands: 'Thế tay', mic: 'Micro & hiệu chỉnh', settings: 'Cài đặt',
-  today: 'Nhiệm vụ hôm nay', games: 'Sảnh trò chơi', rhythm: 'Nhạc trưởng', spot: 'Tìm nốt sai', interval: 'Thám tử quãng', arena: 'Trò chơi', match: 'Ghép đôi Đô–C', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
-const BACK = { setup: 'home', games: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
-const VERSION = 'Giai đoạn 5 · bản 5.1';
+  today: 'Nhiệm vụ hôm nay', pieces: 'Tập bài trên lớp', piece: 'Tập bài', pplay: 'Tập bài', games: 'Sảnh trò chơi', rhythm: 'Nhạc trưởng', spot: 'Tìm nốt sai', interval: 'Thám tử quãng', arena: 'Trò chơi', match: 'Ghép đôi Đô–C', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
+const BACK = { pieces: 'home', piece: 'pieces', setup: 'home', games: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
+const VERSION = 'Giai đoạn 5 · bản 5.2';
 let current = 'home';
 // inFlow = màn hình nằm trong một lượt tập (trò chơi, bài học, kết quả): nút quay lại về nơi bắt đầu lượt đó
 function go(v, inFlow) {
-  if (!['game', 'seq', 'arena'].includes(v)) wantMic(false);
-  if (v !== 'game' && v !== 'mic' && v !== 'seq' && v !== 'arena') Mic.stop();
+  if (!['game', 'seq', 'arena', 'pplay'].includes(v)) wantMic(false);
+  if (v !== 'game' && v !== 'mic' && v !== 'seq' && v !== 'arena' && v !== 'pplay') Mic.stop();
   if (current === 'arena' && v !== 'arena' && AR) { AR.running = false; AR = null; }
   Mic.onNote = null; Mic.onFrame = null;
   if (current === 'mic' && v !== 'mic') micTest = null;
@@ -1328,11 +1471,14 @@ function go(v, inFlow) {
   if (v === 'island') renderIsland();
   if (v === 'class') renderClass();
   if (v === 'games') renderGames();
+  if (v === 'pieces') renderPieces();
+  if (v === 'piece') renderPiece();
+  renderInputBtn();
   window.scrollTo(0, 0);
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 $('#backBtn').onclick = () => {
-  if (['game', 'lesson', 'seq', 'arena', 'match', 'rhythm', 'spot', 'interval'].includes(current)) { G = null; SQ = null; MT = null; RH = null; SP = null; IV = null; }
+  if (['game', 'lesson', 'seq', 'arena', 'match', 'rhythm', 'spot', 'interval', 'pplay'].includes(current)) { G = null; SQ = null; MT = null; RH = null; SP = null; IV = null; PZ = null; }
   go(BACK[current] || flowBack || 'home');
 };
 $('#settingsBtn').onclick = () => go('settings');
@@ -1344,7 +1490,9 @@ function bindSeg(opt, get, set) {
   box.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; set(b.dataset.v); save(); sync(); });
   sync();
 }
-['clef', 'range', 'answer', 'count'].forEach(k => bindSeg(k, () => state.setup[k], v => { state.setup[k] = v; if (k === 'answer') renderSetupNote(); }));
+['clef', 'range', 'count'].forEach(k => bindSeg(k, () => state.setup[k], v => { state.setup[k] = v; }));
+bindSeg('answer', () => state.settings.input, v => { state.settings.input = v; renderSetupNote(); });
+const playInput = () => state.settings.input === 'piano' ? 'piano' : 'keys';
 bindSeg('sens', () => state.settings.sens, v => { state.settings.sens = v; if (Mic.on) { Mic.stop(); ensureMic(); } else renderThr(); renderMicReport(); });
 bindSeg('grade', () => state.settings.grade, v => { state.settings.grade = v; });
 bindSeg('names', () => state.settings.names, v => { state.settings.names = v; refreshLabels(); });
@@ -1421,7 +1569,7 @@ function freePool() {
 const hidesLabels = () => !G || G.mode !== 'names';
 // cfg: { title, pool:[{clef,note}], count, keySig, octave, onDone(result), againLabel }
 async function startDrill(cfg) {
-  let mode = cfg.mode || state.setup.answer;
+  let mode = cfg.mode || state.settings.input;
   if (cfg.octave && mode === 'names') mode = 'keys'; // bài cần đúng cả phím thì không trả lời bằng nút tên
   if (mode === 'piano') await Mic.start();
   G = { ...cfg, total: cfg.count, mode, i: 0, score: 0, queue: [], missed: new Map(), last: null, locked: false, q: null, keySig: cfg.keySig || 0 };
@@ -1441,7 +1589,7 @@ function startFree() {
 $('#startGame').onclick = () => { audio(); startFree(); };
 function renderSetupNote(err) {
   const box = $('#setupNote');
-  if (state.setup.answer !== 'piano') { box.hidden = true; return; }
+  if (state.settings.input !== 'piano') { box.hidden = true; return; }
   box.hidden = false;
   if (err || (inFrame && state.mic.result === 'bị chặn')) {
     box.className = 'status no';
@@ -1680,7 +1828,7 @@ const Mic = {
         const stream = await withTimeout(navigator.mediaDevices.getUserMedia(MIC_OPTS()), 10000);
         const a = audio();
         try { if (a.state !== 'running') await withTimeout(a.resume(), 2000); } catch {}
-        Object.assign(this, { stream, buf: new Float32Array(4096), on: true, failed: false, L: Pitch.createListener(sens().listen), zeroSince: 0, paused: false });
+        Object.assign(this, { stream, buf: new Float32Array(8192), spec: null, on: true, failed: false, L: Pitch.createListener(sens().listen), zeroSince: 0, paused: false });
         stream.getAudioTracks().forEach(t => { t.onended = () => { if (this.stream === stream) this.restart('micro bị ngắt'); }; });
         this.wire();
         clearInterval(this.timer); this.timer = setInterval(() => this.tick(), 40);
@@ -1743,7 +1891,7 @@ const Mic = {
   wire() {
     const a = audio();
     this.src = a.createMediaStreamSource(this.stream);
-    this.an = a.createAnalyser(); this.an.fftSize = 4096;
+    this.an = a.createAnalyser(); this.an.fftSize = 8192; this.an.smoothingTimeConstant = 0.1; this.spec = new Float32Array(this.an.frequencyBinCount);
     this.sink = a.createGain(); this.sink.gain.value = 0;
     this.src.connect(this.an); this.an.connect(this.sink); this.sink.connect(a.destination);
   },
@@ -1752,7 +1900,7 @@ const Mic = {
     const now = performance.now();
     if (ac.state !== 'running' && now - (this.resumeTry || 0) > 1000) { this.resumeTry = now; ac.resume().catch(() => {}); }
     this.an.getFloatTimeDomainData(this.buf);
-    const fr = Pitch.detect(this.buf, ac.sampleRate, sens().detect);
+    const fr = Pitch.detect(this.buf.subarray(4096), ac.sampleRate, sens().detect);
     state.mic.maxRms = Math.max(state.mic.maxRms || 0, fr.rms);
     // micro "chết": im lặng tuyệt đối (kể cả tiếng ồn phòng cũng không có) hoặc luồng bị tắt tiếng quá 2 giây
     const tr = this.stream && this.stream.getAudioTracks()[0];
@@ -1769,6 +1917,8 @@ const Mic = {
     }
   },
   gate(sec) { if (this.L) this.L.gate(performance.now() / 1000 + sec); },
+  spectrum() { if (!this.an) return null; this.an.getFloatFrequencyData(this.spec); return this.spec; },
+  binHz() { return ac.sampleRate / this.an.fftSize; },
   async lock() { try { if ('wakeLock' in navigator) this.wake = await navigator.wakeLock.request('screen'); } catch {} },
   unlock() { try { if (this.wake) this.wake.release(); } catch {} this.wake = null; },
 };
@@ -1933,7 +2083,7 @@ function renderMicReport() {
   else { s.className = 'status'; s.textContent = 'Máy này chưa hỗ trợ bỏ qua nút im lặng. Khi tập, nhớ gạt nút im lặng bên hông iPhone sang chế độ có chuông.'; }
   const m = state.mic, c = m.calib;
   const lines = [
-    'Dao Not Nhac · ban 5.1',
+    'Dao Not Nhac · ban 5.2',
     'Micro: ' + (m.result || 'chưa thử') + (m.error ? ' (' + m.error + ')' : ''),
     'Mở trong khung: ' + (inFrame ? 'có (trong Claude)' : 'không (Safari)'),
     'Hiệu chỉnh: ' + (c.measured === undefined ? 'chưa' : 'lệch ' + c.measured + ' nửa cung, ' + c.cents + ' cent, tự bù ' + (c.semis || 0)),
@@ -2065,7 +2215,7 @@ function startSeq(id, after) {
     } });
 }
 async function startPhrases(cfg) {
-  let mode = cfg.mode || (state.setup.answer === 'piano' ? 'piano' : 'keys');
+  let mode = cfg.mode || playInput();
   if (mode === 'piano') await Mic.start();
   SQ = { ...cfg, p: 0, i: 0, errors: 0, mode, total: cfg.phrases.reduce((a, ph) => a + ph.notes.length, 0), done: 0, missed: [], hearts: cfg.boss ? cfg.boss.hearts : 0 };
   $('#qsBoss').hidden = !cfg.boss;
@@ -2260,6 +2410,9 @@ function renderClass() {
   const after = { back: 'class', backLabel: 'Về Theo lớp', refresh: renderClass };
   t.steps.forEach(id => box.appendChild(stepRow(id, after, cset)));
   const pool = Plan.topicPool(t.id);
+  const pc = PCS.PIECES.find(x => x.topic === state.classTopic);
+  $('#clsPiece').hidden = !pc;
+  if (pc) { $('#clsPiece').textContent = '📖 Tập trọn ' + pc.book + ' (' + pc.title + ')'; $('#clsPiece').onclick = () => { pieceId = pc.id; go('piece'); }; }
   $('#clsMix').hidden = !pool.length;
   $('#clsMix').onclick = () => { flowBack = 'class'; audio(); startDrill({ title: 'Luyện tổng hợp: ' + t.title, pool: pool.map(parseKey), count: 15, octave: true, onDone: r => showResult(r, { again: () => $('#clsMix').onclick(), back: 'class', backLabel: 'Về Theo lớp' }) }); };
 }
@@ -2460,7 +2613,7 @@ function renderGames() {
   $('#gmPoolInfo').textContent = gamePool(g.pool).length + ' nốt';
 }
 bindSeg('gpool', () => gs().pool, v => { gs().pool = v; renderGames(); });
-bindSeg('ginput', () => gs().input, v => { gs().input = v; });
+bindSeg('ginput', () => playInput(), v => { state.settings.input = v; });
 
 /* ---------- Đấu trường canvas: Phi đội bắn nốt & Mưa nốt ---------- */
 let AR = null, arKb = null;
@@ -2496,7 +2649,7 @@ function startArena(game, pool) {
   const g = gs();
   const mode = g.mode[game] === 'chay' && (g.acc[game] || 0) >= 0.9 ? 'chay' : 'cho';
   AR = { game, mode, pool, ents: [], fx: [], t: 0, spawnT: 0, hits: 0, escaped: 0, wrong: 0, combo: 0, bestCombo: 0, score: 0,
-    shots: 0, total: mode === 'cho' ? 15 : 0, duration: mode === 'chay' ? 60 : 0, missed: new Map(), input: g.input, running: false, paused: false, msg: '', msgT: 0 };
+    shots: 0, total: mode === 'cho' ? 15 : 0, duration: mode === 'chay' ? 60 : 0, missed: new Map(), input: playInput(), running: false, paused: false, msg: '', msgT: 0 };
   $('#arTitle').textContent = GAMES[game].name + ' · ' + (mode === 'cho' ? 'kiểu chờ' : 'kiểu chạy');
   if (!arKb) arKb = buildKeyboard($('#arKb'), n => { if (AR && AR.input !== 'piano') { play(n); arenaInput(C.midi(n)); } else play(n); });
   arKb.labels('off');
@@ -2677,7 +2830,7 @@ function startLift(pool) {
     do { j = i + (Math.random() < 0.5 ? -1 : 1) * (1 + Math.floor(Math.random() * 3)); } while ((j < 0 || j >= sorted.length || j === i) && guard++ < 20);
     i = Math.max(0, Math.min(sorted.length - 1, j));
   }
-  startDrill({ title: 'Thang máy', pool: sorted, sequence: seq, grand: true, count: seq.length, octave: true, mode: gs().input,
+  startDrill({ title: 'Thang máy', pool: sorted, sequence: seq, grand: true, count: seq.length, octave: true, mode: playInput(),
     onDone: r => gameResult('lift', r) });
 }
 
@@ -2696,7 +2849,7 @@ function startSwap() {
     for (let j = 0; j < 4; j++) { let x; do { x = Math.floor(Math.random() * 5); } while (x === prev); prev = x; notes.push(list[x].note); }
     phrases.push(phraseOf(pos, hand, notes));
   }
-  startPhrases({ title: 'Đổi thế tay', header: 'Trò chơi', phrases, mode: gs().input === 'piano' ? 'piano' : 'keys', note: 'Mỗi câu 4 nốt.', onDone: r => gameResult('swap', r) });
+  startPhrases({ title: 'Đổi thế tay', header: 'Trò chơi', phrases, mode: playInput(), note: 'Mỗi câu 4 nốt.', onDone: r => gameResult('swap', r) });
 }
 
 /* ---------- Ghép đôi ---------- */
@@ -3087,12 +3240,240 @@ launchGame = function (game, after) {
     if (game === 'flow') {
       const pool = gamePool(gs().pool).filter(q => !q.note.acc);
       const clefs = [...new Set(pool.map(q => q.clef))];
-      return startFlow({ title: 'Đọc trôi', pool, clefs, count: 12, mode: gs().input === 'piano' ? 'piano' : 'keys', onDone: done });
+      return startFlow({ title: 'Đọc trôi', pool, clefs, count: 12, mode: playInput(), onDone: done });
     }
   }
   return launchBase(game, after);
 };
 bindSeg('rlevel', () => String(gs().rhythmLevel || 1), v => { gs().rhythmLevel = +v; if (RH && !RH.fixed && RH.state === 'idle') { RH.level = +v; nextRhythm(); } });
+
+/* =================== TẬP TRỌN BÀI TRÊN LỚP =================== */
+const PCS = window.Pieces;
+let PZ = null, pzKb = null, pieceId = 'b18';
+const pzState = id => (state.pieces[id] = state.pieces[id] || {});
+const fingerFor = (p, hand, id) => (p.fingers[hand] || {})[id] || 0;
+
+function renderPieces() {
+  const box = $('#pcList'); box.replaceChildren();
+  PCS.PIECES.forEach(p => {
+    const sts = PCS.stages(p), ps = pzState(p.id), done = sts.filter(s => ps[s.key] && ps[s.key].passed).length;
+    const b = document.createElement('button'); b.className = 'isl' + (ps['all-both'] && ps['all-both'].passed ? ' full' : '');
+    const num = document.createElement('span'); num.className = 'islnum'; num.textContent = p.book.replace(/\D/g, '');
+    const tx = document.createElement('span'); tx.className = 'stx';
+    const t = document.createElement('b'); t.textContent = p.title;
+    const sub = document.createElement('small'); sub.textContent = p.book + ' · ' + p.sub + ' · ' + (ps['all-both'] && ps['all-both'].passed ? 'đã duyệt 🎉' : done + '/' + sts.length + ' bước');
+    const bar = document.createElement('span'); bar.className = 'pbar'; const fill = document.createElement('i'); fill.style.width = (done / sts.length * 100) + '%'; bar.appendChild(fill);
+    tx.append(t, sub, bar); b.append(num, tx);
+    b.onclick = () => { pieceId = p.id; go('piece'); };
+    box.appendChild(b);
+  });
+}
+function renderPiece() {
+  const p = PCS.piece(pieceId), ps = pzState(p.id), sts = PCS.stages(p);
+  $('#pzName').textContent = p.book + ' · ' + p.title;
+  $('#pzSub').textContent = p.sub + ' · ' + p.note;
+  const fin = ps['all-both'] && ps['all-both'].passed;
+  $('#pzDone').hidden = !fin;
+  const box = $('#pzStages'); box.replaceChildren();
+  const groups = [...p.sections.map((sec, i) => ({ label: 'Ô nhịp ' + sec[0] + '–' + sec[1], sec: i })), { label: 'Cả bài', sec: -1 }];
+  const firstOpen = sts.find(s => !(ps[s.key] && ps[s.key].passed));
+  groups.forEach(g => {
+    const row = document.createElement('div'); row.className = 'prow';
+    const lab = document.createElement('div'); lab.className = 'plab';
+    const lt = document.createElement('b'); lt.textContent = g.label;
+    const ll = document.createElement('button'); ll.className = 'btn ghost small'; ll.textContent = '▶ Nghe';
+    const bars = g.sec === -1 ? [1, p.sections[p.sections.length - 1][1]] : p.sections[g.sec];
+    ll.onclick = () => playPiece(p, ['right', 'left'], bars);
+    lab.append(lt, ll); row.appendChild(lab);
+    const btns = document.createElement('div'); btns.className = 'pbtns';
+    sts.filter(s => s.section === g.sec).forEach(s => {
+      const r = ps[s.key], b = document.createElement('button');
+      b.className = 'pstage' + (r && r.passed ? ' ok' : '') + (firstOpen && firstOpen.key === s.key ? ' next' : '');
+      const t1 = document.createElement('b'); t1.textContent = (r && r.passed ? '✓ ' : '') + s.label;
+      const t2 = document.createElement('small'); t2.textContent = r ? (r.passed ? 'Đã duyệt' : 'Sai ' + r.best + ' nốt') : (firstOpen && firstOpen.key === s.key ? 'Tập bước này' : '');
+      b.append(t1, t2);
+      b.onclick = () => startPiece(p.id, s.key);
+      btns.appendChild(b);
+    });
+    row.appendChild(btns); box.appendChild(row);
+  });
+  $('#pzGo').textContent = firstOpen ? 'Tập tiếp: ' + firstOpen.title : 'Đánh lại cả bài hai tay';
+  $('#pzGo').onclick = () => startPiece(p.id, (firstOpen || sts[sts.length - 1]).key);
+}
+// Phát mẫu: các tay được chọn, đúng nhịp
+function playPiece(p, hands, bars, bpm) {
+  audio();
+  const beat = 60 / (bpm || p.bpm), per = p.time[0] * 4 / p.time[1];
+  PCS.events(p, hands, bars).forEach(e => {
+    const t = ((e.bar - bars[0]) * per + e.beat) * beat;
+    e.notes.forEach(n => play(n.note, t, true));
+  });
+}
+
+/* ---------- Màn hình đánh ---------- */
+async function startPiece(id, key) {
+  const p = PCS.piece(id), st = PCS.stages(p).find(s => s.key === key);
+  const evs = PCS.events(p, st.hands, st.bars).map(e => ({ ...e, midis: e.notes.map(n => C.midi(n.note)) }));
+  const mode = playInput();
+  pieceId = id; audio();
+  if (mode === 'piano') await Mic.start();
+  const all = evs.flatMap(e => e.midis);
+  PZ = { p, st, evs, i: 0, got: new Set(), mistakes: 0, mode, cand: null, listenUntil: 0, prevRms: 0, skipped: [], lo: Math.min(...all), hi: Math.max(...all) };
+  if (!pzKb) pzKb = buildKeyboard($('#pzKb'), n => pieceKey(n));
+  pzKb.labels('off');
+  $('#pzTitle').textContent = st.title;
+  go('pplay', true);
+  $('#title').firstChild.textContent = p.book;
+  if (mode === 'piano') { Mic.onNote = pieceNote; Mic.onFrame = pieceFrame; wantMic(true); }
+  drawPieceWindow(); pieceInfo();
+  requestAnimationFrame(() => pzKb.center(st.hands.includes('right') && !st.hands.includes('left') ? 'C5' : 'C4'));
+}
+function drawPieceWindow() {
+  const { p, st, evs, i } = PZ, P = p._parsed;
+  const cur = evs[Math.min(i, evs.length - 1)];
+  const b0 = cur.bar, b1 = Math.min(st.bars[1], b0 + 1);
+  const U = 0.9;
+  const curKey = new Set(i < evs.length ? cur.notes.map(n => n.hand + '|' + cur.bar + '|' + cur.beat + '|' + n.id) : []);
+  const isDone = (hand, bar, beat) => evs.some((e, k) => k < i && e.bar === bar && e.beat === beat && e.notes.some(n => n.hand === hand));
+  const staffFor = hand => {
+    const items = [];
+    for (let b = b0; b <= b1; b++) {
+      if (b > b0) items.push({ bar: 1 });
+      P[hand][b - 1].forEach(n => {
+        if (n.rest) { items.push({ rest: n.dur, span: n.beats * U }); return; }
+        const k = hand + '|' + b + '|' + n.beat + '|' + n.id;
+        items.push({ note: n.note, dur: n.dur, dot: n.dot, span: n.beats * U,
+          color: curKey.has(k) ? '#e09a00' : isDone(hand, b, n.beat) ? '#9fb4b6' : undefined,
+          finger: state.settings.finger ? fingerFor(p, hand, n.id) : 0 });
+      });
+    }
+    return { clef: hand === 'right' ? 'treble' : 'bass', time: b0 === 1 ? p.time : null, items };
+  };
+  const staves = st.hands.length === 2 ? [staffFor('right'), staffFor('left')] : [staffFor(st.hands[0])];
+  drawStaves($('#pzSheet'), staves, { minWidth: 330, step: 36, pad: (staves.length === 2 ? 4.4 : 5.2) * S, aria: 'Ô nhịp ' + b0 + (b1 > b0 ? '–' + b1 : '') });
+  $('#pzBars').textContent = 'Ô nhịp ' + b0 + (b1 > b0 ? '–' + b1 : '') + ' / ' + st.bars[0] + '–' + st.bars[1];
+  $('#pzNum').textContent = Math.min(i + 1, evs.length) + '/' + evs.length + ' · sai ' + PZ.mistakes;
+  $('#pzBar').style.width = (i / evs.length * 100) + '%';
+}
+function pieceInfo(msg, bad) {
+  const ev = PZ.evs[PZ.i], info = $('#pzInfo');
+  info.className = 'feedback' + (bad ? ' no' : '');
+  if (msg) { info.querySelector('b').textContent = msg; }
+  else if (ev) {
+    const parts = ev.notes.map(n => (n.hand === 'right' ? 'tay phải ' : 'tay trái ') + C.name(n.note, 'vi') + (PZ.got.has(C.midi(n.note)) ? ' ✓' : ''));
+    info.querySelector('b').textContent = (ev.notes.length > 1 ? 'Hai tay cùng lúc: ' : 'Đánh ') + parts.join(' + ');
+  }
+  info.querySelector('span').textContent = PZ.mode === 'piano'
+    ? 'App đang nghe đàn. Nốt màu cam là nốt cần đánh. Đánh sai thì đánh lại đúng nốt đó để đi tiếp.'
+    : 'Bấm trên đàn ảo. Hai tay cùng lúc thì bấm lần lượt cả hai phím.';
+}
+function pieceGot(m) {
+  const ev = PZ.evs[PZ.i]; if (!ev || !ev.midis.includes(m)) return false;
+  PZ.got.add(m);
+  if (ev.midis.every(x => PZ.got.has(x))) { pieceAdvance(); return true; }
+  pieceInfo(); return true;
+}
+function pieceAdvance() {
+  PZ.i++; PZ.got = new Set(); PZ.cand = null; PZ.listenUntil = 0;
+  pzKb.clear();
+  if (PZ.i >= PZ.evs.length) return finishPiece();
+  drawPieceWindow(); pieceInfo();
+}
+function pieceWrong(m) {
+  const ev = PZ.evs[PZ.i]; if (!ev) return;
+  (PZ.log = PZ.log || []).push({ i: PZ.i, heard: m, want: ev.midis, got: [...PZ.got] });
+  if (!ev.missed) { ev.missed = true; PZ.mistakes++; }
+  const want = ev.notes.filter(n => !PZ.got.has(C.midi(n.note)));
+  pzKb.clear(); pzKb.mark(C.id(midiToNote(m)), 'no');
+  want.forEach(n => pzKb.mark(C.id(n.note), 'target', state.settings.finger ? fingerFor(PZ.p, n.hand, n.id) : 0));
+  pzKb.center(C.id(want[0] ? want[0].note : ev.notes[0].note), C.id(midiToNote(m)));
+  drawPieceWindow();
+  pieceInfo('Trang đánh ' + heardName(m) + ' · cần ' + want.map(n => C.name(n.note, 'vi') + ' ' + C.id(n.note)).join(' + '), true);
+}
+// Đàn ảo
+function pieceKey(n) {
+  if (!PZ || current !== 'pplay') { play(n); return; }
+  play(n);
+  if (PZ.mode === 'piano') return;
+  const m = C.midi(n);
+  if (!pieceGot(m)) pieceWrong(m);
+}
+// Đàn thật: nốt nghe được (một nốt) — nốt đúng thì nhận; nốt lạ thì chờ một chút rồi mới tính sai (có thể là tiếng ngân)
+function pieceNote(m) {
+  if (!PZ || current !== 'pplay' || PZ.mode !== 'piano') return;
+  const ev = PZ.evs[PZ.i]; if (!ev) return;
+  PZ.listenUntil = performance.now() + 700;
+  if (pieceGot(m)) { if (PZ) PZ.cand = null; return; }
+  const ringing = [...PCS.sounding(PZ.p, PZ.st.hands, ev.bar, ev.beat), ...(PZ.evs[PZ.i - 1] ? PZ.evs[PZ.i - 1].notes.map(n => n.note) : [])].map(C.midi);
+  if (ringing.includes(m) || PZ.got.has(m)) return;
+  // Chỉ tính là đánh sai khi nốt nghe được nằm gần vùng của bài và thật sự đang vang
+  // (tiếng nhiều nốt chồng lên nhau đôi khi làm bộ nghe đoán ra một nốt trầm "ảo")
+  if (m < PZ.lo - 3 || m > PZ.hi + 3) return;
+  const spec = Mic.spectrum();
+  if (spec && !Pitch.presence(spec, Mic.binHz(), m).present) return;
+  PZ.cand = { m, at: performance.now() };
+}
+// Mỗi khung micro: nếu vừa có tiếng đánh, kiểm tra các nốt còn thiếu có đang vang không (bắt được hai tay cùng lúc)
+function pieceFrame(fr) {
+  if (!PZ || !fr || current !== 'pplay' || PZ.mode !== 'piano') return;
+  const now = performance.now(), ev = PZ.evs[PZ.i]; if (!ev) return;
+  if (fr.rms > Math.max(sens().listen.minRms, PZ.prevRms * 1.6)) PZ.listenUntil = now + 700;
+  PZ.prevRms = fr.rms;
+  if (now < PZ.listenUntil && ev.midis.length > 1) {
+    const spec = Mic.spectrum();
+    if (spec) for (const x of ev.midis) if (!PZ.got.has(x) && Pitch.presence(spec, Mic.binHz(), x).present) { if (pieceGot(x)) return; }
+  }
+  if (PZ.cand && now - PZ.cand.at > 600) { const m = PZ.cand.m; PZ.cand = null; pieceWrong(m); }
+}
+$('#pzSkip').onclick = () => {
+  if (!PZ) return; const ev = PZ.evs[PZ.i]; if (!ev) return;
+  if (!ev.missed) { ev.missed = true; PZ.mistakes++; }
+  PZ.skipped.push('ô ' + ev.bar + ' phách ' + (ev.beat + 1) + ' (' + ev.notes.map(n => C.name(n.note, 'vi') + ' ' + C.id(n.note)).join(' + ') + ')');
+  pieceAdvance();
+};
+$('#pzListen').onclick = () => { if (!PZ) return; const ev = PZ.evs[PZ.i] || PZ.evs[0]; playPiece(PZ.p, PZ.st.hands, [ev.bar, Math.min(PZ.st.bars[1], ev.bar + 1)], PZ.p.bpm * 0.8); };
+$('#pzRestart').onclick = () => { if (PZ) startPiece(PZ.p.id, PZ.st.key); };
+function finishPiece() {
+  const { p, st, evs, mistakes, skipped } = PZ;
+  PZ = null; Mic.onNote = null; Mic.onFrame = null;
+  const ok = mistakes <= PCS.allowed(st), ps = pzState(p.id), prev = ps[st.key];
+  ps[st.key] = { passed: ok || !!(prev && prev.passed), best: Math.min(mistakes, prev ? prev.best : 99), at: Plan.dayKey() };
+  markDay(); save();
+  const sts = PCS.stages(p), idx = sts.findIndex(s => s.key === st.key), nx = sts.slice(idx + 1).find(s => !(ps[s.key] && ps[s.key].passed));
+  const whole = st.key === 'all-both' && ok;
+  const msg = (ok ? (whole ? '🎉 ' + p.book + ' đã duyệt! ' : 'Duyệt ✓ ') + (mistakes ? 'Sai ' + mistakes + ' nốt, vẫn qua.' : 'Không sai nốt nào!')
+    : 'Sai ' + mistakes + ' nốt. Để duyệt cần sai tối đa ' + PCS.allowed(st) + ' nốt. Tập lại nhé.') + (skipped.length ? ' Nốt đã bỏ qua: ' + skipped.join('; ') + '.' : '');
+  showResult({ score: evs.length - mistakes, total: evs.length, missed: evs.filter(e => e.missed).flatMap(e => e.notes.map(n => ({ clef: n.hand === 'right' ? 'treble' : 'bass', note: n.note }))) },
+    { passed: ok, passMsg: msg, again: () => startPiece(p.id, st.key), next: ok && nx ? { label: 'Bước tiếp: ' + nx.title + ' →', fn: () => startPiece(p.id, nx.key) } : null, back: 'piece', backLabel: 'Về ' + p.book });
+}
+
+/* ---------- Đổi cách trả lời ngay trong lúc chơi ---------- */
+function renderInputBtn() {
+  const b = $('#inputBtn'); if (!b) return;
+  b.hidden = !['game', 'seq', 'arena', 'pplay'].includes(current);
+  const live = current === 'game' && G ? G.mode : current === 'seq' && SQ ? SQ.mode : current === 'arena' && AR ? AR.input : current === 'pplay' && PZ ? PZ.mode : playInput();
+  b.textContent = live === 'piano' ? '🎹 Đàn thật' : live === 'names' ? '🔤 Nút tên' : live === 'self' ? '🎧 Tự chấm' : '📱 Đàn ảo';
+}
+$('#inputBtn').onclick = async () => {
+  const live = $('#inputBtn').textContent.includes('Đàn thật') ? 'piano' : 'other';
+  const v = live === 'piano' ? 'keys' : 'piano';
+  state.settings.input = v; save();
+  const piano = v === 'piano';
+  if (piano) await Mic.start(); else { wantMic(false); Mic.stop(); }
+  if (current === 'game' && G) {
+    G.mode = v; buildAnswers(); gKb.labels('off'); $('#gSelf').hidden = true;
+    if (piano) { Mic.onNote = gameNote; Mic.onFrame = gameFrame; }
+    $('#gFeedback').querySelector('b').textContent = piano ? 'Đánh nốt này trên đàn thật' : 'Bấm đúng phím này trên đàn ảo';
+  } else if (current === 'seq' && SQ) {
+    SQ.mode = v; if (piano) { Mic.onNote = m => seqInput(m); Mic.onFrame = null; } renderSeq(false);
+  } else if (current === 'arena' && AR) {
+    AR.input = v; if (piano) { Mic.onNote = m => arenaInput(m); Mic.onFrame = null; }
+  } else if (current === 'pplay' && PZ) {
+    PZ.mode = v; if (piano) { Mic.onNote = pieceNote; Mic.onFrame = pieceFrame; } pieceInfo();
+  }
+  if (piano) wantMic(true);
+  renderInputBtn();
+};
 
 /* ---------- Làm mới nhãn khi đổi cài đặt ---------- */
 function refreshLabels() {
@@ -3104,7 +3485,7 @@ function refreshLabels() {
 // móc kiểm thử (chỉ đọc)
 window.__draw = drawStaves; window.__ac = () => ac;
 window.__mic = Mic;
-window.__daonot = { get RH() { return RH; }, get SP() { return SP; }, get IV() { return IV; }, get G() { return G; }, get SQ() { return SQ; }, get AR() { return AR; }, get MT() { return MT; }, get state() { return state; } };
+window.__daonot = { get PZ() { return PZ; }, get RH() { return RH; }, get SP() { return SP; }, get IV() { return IV; }, get G() { return G; }, get SQ() { return SQ; }, get AR() { return AR; }, get MT() { return MT; }, get state() { return state; } };
 renderSetupNote();
 askPersist();
 go('home');

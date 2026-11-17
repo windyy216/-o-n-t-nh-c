@@ -287,7 +287,7 @@ body.haspill .fpview { height: calc(100dvh - 160px - env(safe-area-inset-top, 0p
 <div class="app" id="app">
   <header class="top">
     <button class="iconbtn" id="backBtn" aria-label="Quay lại" hidden>←</button>
-    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 5 · bản 5.4</small></h1>
+    <h1 id="title">Đảo Nốt Nhạc<small id="subtitle">Giai đoạn 5 · bản 5.5</small></h1>
     <button class="chip inputbtn" id="inputBtn" hidden aria-label="Đổi cách trả lời"></button>
     <button class="iconbtn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
   </header>
@@ -306,7 +306,7 @@ body.haspill .fpview { height: calc(100dvh - 160px - env(safe-area-inset-top, 0p
     <div class="status" id="homeBanner" hidden></div>
     <div class="menu">
       <button class="tile main" data-go="map"><span class="ic">🏝️</span><div><b>Bản đồ 6 đảo</b><br><span>Lộ trình chính, đi từng bước</span></div></button>
-      <button class="tile" data-go="pieces"><span class="ic">📖</span><b>Tập bài trên lớp</b><span>Bài 18 · chạy theo nốt cả bài, sai thì dừng</span></button>
+      <button class="tile" data-go="pieces"><span class="ic">📖</span><b>Tập bài trên lớp</b><span>Bài 18–28 · chạy theo nốt, kiểm tra cả bài</span></button>
       <button class="tile" data-go="class"><span class="ic">🎒</span><b>Theo lớp</b><span id="hClassSub"></span></button>
       <button class="tile" data-go="games"><span class="ic">🎮</span><b>Sảnh trò chơi</b><span>10 trò: Phi đội, Mưa nốt, Nhạc trưởng, Boss hợp âm…</span></button>
       <button class="tile" data-go="setup"><span class="ic">🎯</span><b>Luyện tự do</b><span id="hWeak">Gọi tên nốt, chọn khóa và vùng nốt</span></button>
@@ -615,7 +615,7 @@ body.haspill .fpview { height: calc(100dvh - 160px - env(safe-area-inset-top, 0p
       <button class="btn ghost" id="bRestore">Khôi phục</button>
       <div class="muted" id="bMsg" role="status"></div>
     </div>
-    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 5 · bản 5.4 · dữ liệu phiên bản 2</p>
+    <p class="muted">Đảo Nốt Nhạc · Giai đoạn 5 · bản 5.5 · dữ liệu phiên bản 2</p>
   </section>
 </div>
 
@@ -1173,6 +1173,9 @@ body.haspill .fpview { height: calc(100dvh - 160px - env(safe-area-inset-top, 0p
   const C = typeof module !== 'undefined' && module.exports ? require('./core.js') : root.NoteCore;
   const BEATS = { w: 4, 'h.': 3, h: 2, 'q.': 1.5, q: 1, 8: 0.5 };
 
+
+  // Viết gọn: nốt không ghi trường độ là nốt đen (q). D.C. al Fine được viết ra hết.
+  const Q = str => str.split('|').map(b => b.trim().split(/\s+/).map(t => t.includes(':') ? t : t.replace(/^([A-Gr][#b]?\d?)(@\d)?$/, (m, a, f) => a + ':q' + (f || ''))).join(' ')).join(' | ');
   const PIECES = [
     {
       id: 'b18', book: 'Bài 18', title: 'Conte de grand-mère', sub: 'Bà kể chuyện', time: [4, 4], bpm: 72, topic: 'c18',
@@ -1209,6 +1212,110 @@ body.haspill .fpview { height: calc(100dvh - 160px - env(safe-area-inset-top, 0p
              'C3:q E3:q G3:q | C3:q E3:q G3:q | F3:q E3:q D3:q | C3:q G3:h | ' +
              'C3:q E3:q G3:q | C3:q E3:q G3:q | F3:q G3:q F3:q | E3:h.',
     },
+    {
+      id: 'b21', book: 'Bài 21', title: 'Au clair de la lune', sub: 'Dưới ánh trăng', time: [4, 4], bpm: 80, topic: 'c21',
+      note: 'Claude chép từ ảnh trang 34. Ô 9–12 tay phải ở vị trí Sol (ngón theo sách).',
+      fingers: { right: { C5: 1, D5: 2, E5: 3, F5: 4, G5: 5, G4: 1, A4: 2, B4: 3 }, left: { C3: 5, D3: 4, E3: 3, F3: 2, G3: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16]],
+      right: Q('C5 C5 C5 D5 | E5:h D5:h | C5 E5 D5 D5 | C5:w | C5 C5 C5 D5 | E5:h D5:h | C5 E5 D5 D5 | C5:h r:h | ' +
+               'D5@5 D5@5 D5@5 D5@5 | A4:h A4:h | D5@5 C5@4 B4 A4 | G4:w | C5 C5 C5 D5 | E5:h D5:h | C5 E5 D5 D5 | C5:w'),
+      left: Q('C3 G3 E3 G3 | C3 G3 F3 G3 | E3 G3 F3:h | E3 G3 E3 G3 | C3 G3 E3 G3 | C3 G3 F3 G3 | E3 G3 F3:h | E3 G3 E3@2 C3@4 | ' +
+              'C3:h G3:h | C3 G3 C3 G3 | D3:w | G3 F3 E3 D3 | C3 G3 E3 F3 | G3:h F3:h | E3 G3 F3:h | E3 G3 C3:h'),
+    },
+    {
+      id: 'b22-3', book: 'Bài 22 · số 3', title: 'Nốt trắng chấm dôi', sub: 'Bài học nốt chấm dôi', time: [4, 4], bpm: 80, topic: 'c22',
+      note: 'Claude chép từ ảnh trang 35, đã viết ra phần quay lại đầu (D.C.) tới chữ FIN. Ô 15–16 tay phải ảnh hơi cong, Trang dò lại giúp.',
+      fingers: { right: { C5: 1, D5: 2, E5: 3, F5: 4, G5: 5 }, left: { C3: 5, D3: 4, E3: 3, F3: 2, G3: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16], [17, 20], [21, 24]],
+      right: Q('C5:h. E5 | C5:h. E5 | D5:h. F5 | E5:h. D5 | C5:h. E5 | C5:h. E5 | D5:h. E5 | C5:w | ' +
+               'D5:h. E5 | F5:h. E5 | D5:h. C5 | D5 E5 D5:h | D5:h. E5 | F5:h. E5 | D5 C5 D5 E5 | D5 E5 D5 D5 | ' +
+               'C5:h. E5 | C5:h. E5 | D5:h. F5 | E5:h. D5 | C5:h. E5 | C5:h. E5 | D5:h. E5 | C5:w'),
+      left: Q('C3 G3 E3 G3 | C3 G3 E3 G3 | F3 G3 D3 G3 | C3 G3 E3 G3 | C3 G3 E3 G3 | C3 G3 E3 G3 | F3 G3 F3 G3 | E3 G3 C3:h | ' +
+              'F3 G3 F3 G3 | D3 G3 D3 G3 | F3 G3 F3 E3 | D3 C3 G3:h | F3 G3 F3 G3 | D3 G3 D3 G3 | F3 E3 D3 C3 | G3:w | ' +
+              'C3 G3 E3 G3 | C3 G3 E3 G3 | F3 G3 D3 G3 | C3 G3 E3 G3 | C3 G3 E3 G3 | C3 G3 E3 G3 | F3 G3 F3 G3 | E3 G3 C3:h'),
+    },
+    {
+      id: 'b22-4', book: 'Bài 22 · số 4', title: 'Đàn chậm sau đó mới nhanh', sub: 'Tay trái vị trí Sol', time: [4, 4], bpm: 84, topic: 'c22',
+      note: 'Claude chép từ ảnh trang 36, đã viết ra phần quay lại đầu (D.C.) tới chữ FIN.',
+      fingers: { right: { C5: 1, D5: 2, E5: 3, F5: 4, G5: 5 }, left: { G2: 5, A2: 4, B2: 3, C3: 2, D3: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16], [17, 20], [21, 24]],
+      right: Q('E5:h. F5 | G5:h. F5 | E5 D5 C5 E5 | D5 G5 F5 D5 | E5:h. F5 | G5:h. F5 | E5 C5 D5 E5 | C5 E5 C5:h | ' +
+               'D5:h. E5 | D5:h. E5 | F5 E5 D5 E5 | D5:w | D5:h. E5 | D5:h. E5 | F5 E5 D5 C5 | G5 F5 D5 F5 | ' +
+               'E5:h. F5 | G5:h. F5 | E5 D5 C5 E5 | D5 G5 F5 D5 | E5:h. F5 | G5:h. F5 | E5 C5 D5 E5 | C5 E5 C5:h'),
+      left: Q('C3 G2 C3 G2 | B2 G2 B2 G2 | C3:h. C3 | G2:w | C3 G2 C3 G2 | B2 G2 B2 G2 | C3:h G2:h | C3 G2 C3:h | ' +
+              'B2 G2 B2 C3 | B2 G2 B2 C3 | D3 C3 B2 C3 | B2 D3 B2 G2 | B2 G2 B2 C3 | B2 G2 B2 C3 | D3 C3 B2 A2 | G2:w | ' +
+              'C3 G2 C3 G2 | B2 G2 B2 G2 | C3:h. C3 | G2:w | C3 G2 C3 G2 | B2 G2 B2 G2 | C3:h G2:h | C3 G2 C3:h'),
+    },
+    {
+      id: 'b22-5', book: 'Bài 22 · số 5', title: 'Nốt tròn 4 phách', sub: 'Đánh 2 lần (dấu nhắc lại)', time: [4, 4], bpm: 88, topic: 'c22',
+      note: 'Claude chép từ ảnh trang 36, có dấu nhắc lại nên đã viết ra 2 lần.',
+      fingers: { right: { C5: 1, D5: 2, E5: 3, F5: 4, G5: 5 }, left: { G2: 5, A2: 4, B2: 3, C3: 2, D3: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16]],
+      right: Q('E5 C5 E5 G5 | F5 D5 F5 G5 | E5 C5 E5 G5 | F5 E5 D5:h | E5 C5 E5 G5 | F5 D5 F5 G5 | E5 G5 E5 D5 | C5:w | ' +
+               'E5 C5 E5 G5 | F5 D5 F5 G5 | E5 C5 E5 G5 | F5 E5 D5:h | E5 C5 E5 G5 | F5 D5 F5 G5 | E5 G5 E5 D5 | C5:w'),
+      left: Q('C3:h. G2 | D3:h. G2 | C3:h. G2 | B2 C3 G2:h | C3:h. G2 | D3:h. G2 | C3:h G2:h | C3:w | ' +
+              'C3:h. G2 | D3:h. G2 | C3:h. G2 | B2 C3 G2:h | C3:h. G2 | D3:h. G2 | C3:h G2:h | C3:w'),
+    },
+    {
+      id: 'b23', book: 'Bài 23', title: 'Suzon', sub: 'Bé Suzon', time: [4, 4], bpm: 76, topic: 'c23',
+      note: 'Claude chép từ ảnh trang 37. Nốt nào khác sách, Trang báo để sửa.',
+      fingers: { right: { C5: 1, D5: 2, E5: 3, F5: 4, G5: 5 }, left: { G2: 5, C3: 5, D3: 4, E3: 3, F3: 2, G3: 1 } },
+      sections: [[1, 3], [4, 6], [7, 9], [10, 11]],
+      right: Q('E5:h. E5 | G5:h. G5 | E5:h. E5 | C5:h. C5 | D5:h. E5 | G5 F5 E5 D5 | E5 D5 C5 D5 | E5:h. E5 | G5:h. C5 | E5 D5 C5 D5 | C5:w'),
+      left: Q('C3 G3 E3 G3 | C3 G3 E3 G3 | C3 G3 E3 G3 | C3 G3 E3 G3 | C3 G3 F3 G3 | G2:h G3:h | C3 G3 E3 G3 | C3 G3 E3 G3 | C3 G3 E3 G3 | C3:h G3:h | C3:w'),
+    },
+    {
+      id: 'b24', book: 'Bài 24', title: 'Petit Papa', sub: 'Bố yêu · Sol trưởng', time: [4, 4], bpm: 80, key: 1, topic: 'c24',
+      note: 'Claude chép từ ảnh trang 38, đã viết ra phần quay lại đầu (D.C.) tới FIN. Ô 2 và 6: nốt đen cuối là Đô (C5), Trang dò lại giúp.',
+      fingers: { right: { G4: 1, A4: 2, B4: 3, C5: 4, D5: 5 }, left: { G2: 5, A2: 4, B2: 3, C3: 2, D3: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16], [17, 20], [21, 24]],
+      right: Q('B4:h B4 B4 | D5:h. C5 | G4 G4 A4 A4 | B4:h G4:h | B4:h B4 B4 | D5:h. C5 | G4 G4 A4 A4 | G4:w | ' +
+               'A4:h A4 A4 | B4:h G4 B4 | C5:h B4 D5 | B4:h G4:h | A4:h A4 A4 | B4:h G4 B4 | C5:h A4 C5 | B4:w | ' +
+               'B4:h B4 B4 | D5:h. C5 | G4 G4 A4 A4 | B4:h G4:h | B4:h B4 B4 | D5:h. C5 | G4 G4 A4 A4 | G4:w'),
+      left: Q('G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 C3 D3 | G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 C3 D3 | B2 D3 G2:h | ' +
+              'C3 D3 C3 D3 | G2 D3 B2 D3 | A2 D3 C3 D3 | G2 D3 B2 D3 | C3 D3 C3 D3 | G2 D3 B2 D3 | A2 D3 C3 D3 | G2 D3 B2 A2 | ' +
+              'G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 C3 D3 | G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 C3 D3 | B2 D3 G2:h'),
+    },
+    {
+      id: 'b25', book: 'Bài 25 · số 4', title: 'Dấu thăng', sub: 'Valse Sol trưởng, chú ý Fa♯ tay trái', time: [3, 4], bpm: 96, key: 1, topic: 'c25',
+      note: 'Claude chép từ ảnh trang 39–40, đã viết ra phần quay lại đầu (D.C.) tới FIN.',
+      fingers: { right: { G4: 1, A4: 2, B4: 3, C5: 4, D5: 5 }, left: { 'F#2': 5, G2: 5, A2: 4, B2: 3, C3: 2, D3: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16], [17, 20], [21, 24]],
+      right: Q('B4:h G4 | B4 D5 B4 | A4 B4 A4 | G4:h A4 | B4:h G4 | B4 D5 B4 | A4 B4 A4 | G4:h. | ' +
+               'A4 B4 C5 | B4:h D5 | C5 B4 A4 | B4 A4 G4 | A4 B4 C5 | B4:h D5 | D5 C5 B4 | A4:h. | ' +
+               'B4:h G4 | B4 D5 B4 | A4 B4 A4 | G4:h A4 | B4:h G4 | B4 D5 B4 | A4 B4 A4 | G4:h.'),
+      left: Q('G2 B2 D3 | G2 B2 D3 | F#2 D3:h | G2 D3:h | G2 B2 D3 | G2 B2 D3 | F#2 D3:h | G2:h. | ' +
+              'C3 B2 A2 | G2 D3:h | F#2 D3:h | G2 D3:h | C3 B2 A2 | G2 D3:h | G2 D3:h | G2 C3 D3 | ' +
+              'G2 B2 D3 | G2 B2 D3 | F#2 D3:h | G2 D3:h | G2 B2 D3 | G2 B2 D3 | F#2 D3:h | G2:h.'),
+    },
+    {
+      id: 'b26', book: 'Bài 26 · số 6', title: 'Luân khúc – Đáp ca', sub: 'Vị trí nốt Ré · Fa♯ cả hai tay', time: [4, 4], bpm: 84, key: 1, topic: 'c26',
+      note: 'Claude chép từ ảnh trang 40. Hai tay ở vị trí Rê.',
+      fingers: { right: { D5: 1, E5: 2, 'F#5': 3, G5: 4, A5: 5 }, left: { D3: 5, E3: 4, 'F#3': 3, G3: 2, A3: 1 } },
+      sections: [[1, 2], [3, 4], [5, 6], [7, 8]],
+      right: Q('F#5:h D5 E5 | F#5:h A5 G5 | F#5:h D5 E5 | F#5 G5 A5 G5 | F#5 E5 D5 E5 | F#5:h A5 G5 | F#5 E5 D5 E5 | F#5 E5 D5:h'),
+      left: Q('D3 E3 F#3:h | A3 G3 F#3:h | D3 E3 F#3 G3 | A3 G3 F#3 E3 | D3 E3 F#3:h | A3 G3 F#3:h | D3 E3 F#3 G3 | A3 G3 F#3:h'),
+    },
+    {
+      id: 'b27', book: 'Bài 27', title: 'Les petits soldats de bois', sub: 'Những chú lính gỗ · Sol trưởng', time: [4, 4], bpm: 92, key: 1, topic: 'c27',
+      note: 'Claude chép từ ảnh trang 41. Chú ý Fa♯ tay trái.',
+      fingers: { right: { G4: 1, A4: 2, B4: 3, C5: 4, D5: 5 }, left: { 'F#2': 5, G2: 5, A2: 4, B2: 3, C3: 2, D3: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16], [17, 18]],
+      right: Q('B4 D5 D5 D5 | B4 D5 D5 D5 | B4 D5 A4 D5 | B4 G4 A4:h | B4 D5 D5 D5 | B4 D5 D5 D5 | B4 D5 C5 A4 | G4 B4 G4:h | ' +
+               'A4 C5 C5 C5 | A4 C5 C5 C5 | B4 A4 G4 B4 | D5 B4 A4:h | B4 D5 D5 D5 | B4 D5 D5 D5 | B4 D5 C5 A4 | G4 B4 G4:h | G4 B4 D5 B4 | G4:w'),
+      left: Q('G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 F#2 D3 | G2 B2 D3:h | G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 F#2 D3 | G2 D3 G2:h | ' +
+              'C3 D3 A2 D3 | F#2 D3 A2 D3 | G2 D3 B2 D3 | G2 D3 F#2 D3 | G2 D3 B2 D3 | G2 D3 B2 D3 | G2 D3 F#2 D3 | G2 D3 G2:h | G2 D3 B2 D3 | G2:w'),
+    },
+    {
+      id: 'b28', book: 'Bài 28', title: 'Le coucou', sub: 'Chim cúc cu · Sol trưởng', time: [3, 4], bpm: 100, key: 1, topic: 'c28',
+      note: 'Claude chép từ ảnh trang 42.',
+      fingers: { right: { G4: 1, A4: 2, B4: 3, C5: 4, D5: 5 }, left: { 'F#2': 5, G2: 5, A2: 4, B2: 3, C3: 2, D3: 1 } },
+      sections: [[1, 4], [5, 8], [9, 12], [13, 16]],
+      right: Q('D5:h B4 | D5:h B4 | A4 G4 A4 | B4:h G4 | D5:h B4 | D5:h B4 | A4 B4 A4 | G4:h. | ' +
+               'A4 A4 B4 | C5:h A4 | B4 B4 C5 | D5:h B4 | D5:h B4 | D5:h B4 | C5 B4 A4 | G4:h.'),
+      left: Q('G2 B2 D3 | G2 B2 D3 | C3 B2 A2 | G2 B2 D3 | G2 B2 D3 | G2 B2 D3 | C3 D3 C3 | B2:h D3 | ' +
+              'F#2:h D3 | F#2:h D3 | G2:h D3 | G2:h D3 | G2 B2 D3 | G2 B2 D3 | F#2 D3 C3 | B2:h.'),
+    },
   ];
 
   // "C5:q E5:q | …" → [[{note, dur, beat, beats, rest}], …] theo ô nhịp
@@ -1216,10 +1323,10 @@ body.haspill .fpview { height: calc(100dvh - 160px - env(safe-area-inset-top, 0p
     return str.split('|').map(bar => {
       let beat = 0;
       return bar.trim().split(/\s+/).filter(Boolean).map(t => {
-        const [n, d] = t.split(':');
+        const [nd, fg] = t.split('@'); const [n, d] = nd.split(':');
         const beats = BEATS[d];
         if (!beats) throw new Error('Trường độ sai: ' + t);
-        const ev = { rest: n === 'r', note: n === 'r' ? null : C.parse(n), dur: d.replace('.', ''), dot: d.endsWith('.'), beat, beats, id: n };
+        const ev = { rest: n === 'r', note: n === 'r' ? null : C.parse(n), dur: d.replace('.', ''), dot: d.endsWith('.'), beat, beats, id: n, finger: fg ? +fg : 0 };
         beat += beats;
         return ev;
       });
@@ -1240,7 +1347,7 @@ body.haspill .fpview { height: calc(100dvh - 160px - env(safe-area-inset-top, 0p
         if (n.rest) continue;
         const k = n.beat;
         if (!at.has(k)) at.set(k, { bar: b, beat: k, notes: [] });
-        at.get(k).notes.push({ hand: h, note: n.note, id: n.id, beats: n.beats });
+        at.get(k).notes.push({ hand: h, note: n.note, id: n.id, beats: n.beats, finger: n.finger });
       }
       [...at.values()].sort((a, c) => a.beat - c.beat).forEach(e => out.push(e));
     }
@@ -1526,7 +1633,7 @@ function buildKeyboard(root, onPress) {
 const TITLES = { home: 'Đảo Nốt Nhạc', setup: 'Luyện tự do', game: 'Luyện đọc nốt', result: 'Kết quả', explore: 'Phím & khuông', hands: 'Thế tay', mic: 'Micro & hiệu chỉnh', settings: 'Cài đặt',
   today: 'Nhiệm vụ hôm nay', pieces: 'Tập bài trên lớp', piece: 'Bài trên lớp', pplay: 'Tập bài', games: 'Sảnh trò chơi', rhythm: 'Nhạc trưởng', spot: 'Tìm nốt sai', interval: 'Thám tử quãng', arena: 'Trò chơi', match: 'Ghép đôi Đô–C', map: 'Bản đồ 6 đảo', island: 'Bản đồ 6 đảo', class: 'Theo lớp', lesson: 'Bài học', seq: 'Leo thế tay' };
 const BACK = { pieces: 'home', piece: 'pieces', setup: 'home', games: 'home', today: 'home', map: 'home', island: 'map', class: 'home', explore: 'home', hands: 'home', mic: 'home', settings: 'home' };
-const VERSION = 'Giai đoạn 5 · bản 5.4';
+const VERSION = 'Giai đoạn 5 · bản 5.5';
 let current = 'home';
 // inFlow = màn hình nằm trong một lượt tập (trò chơi, bài học, kết quả): nút quay lại về nơi bắt đầu lượt đó
 function go(v, inFlow) {
@@ -3339,7 +3446,7 @@ function renderPieces() {
   PCS.PIECES.forEach(p => {
     const sts = PCS.stages(p), ps = pzState(p.id), done = sts.filter(s => ps[s.key] && ps[s.key].passed).length;
     const b = document.createElement('button'); b.className = 'isl' + (ps['all-both'] && ps['all-both'].passed ? ' full' : '');
-    const num = document.createElement('span'); num.className = 'islnum'; num.textContent = p.book.replace(/\D/g, '');
+    const num = document.createElement('span'); num.className = 'islnum'; num.textContent = (p.book.match(/\d+/) || [''])[0];
     const tx = document.createElement('span'); tx.className = 'stx';
     const t = document.createElement('b'); t.textContent = p.title;
     const tb = ps.test || {}, tk = ['right+left', 'right', 'left'].find(k => tb[k]);
@@ -3569,8 +3676,9 @@ const fpKeyOf = (hand, bar, beat) => hand + '|' + bar + '|' + beat;
 
 function fpOpen() {
   const p = PCS.piece(pieceId), o = fpOpt();
-  $('#title').firstChild.textContent = p.book;
-  $('#subtitle').textContent = p.title + ' · ' + p.time.join('/');
+  const [bk, so] = p.book.split(' · ');
+  $('#title').firstChild.textContent = bk;
+  $('#subtitle').textContent = (so ? so[0].toUpperCase() + so.slice(1) + ' · ' : '') + p.title + ' · ' + p.time.join('/');
   $('#fpNote').textContent = p.note;
   fpSetup(1);
 }
@@ -3598,7 +3706,7 @@ function fpSetup(startBar) {
 function fpLayout() {
   const box = $('#fpScore'); box.replaceChildren();
   const W = box.clientWidth || 360;
-  const barUnits = FP.per * FU + 0.45, head = 26 + 20;
+  const barUnits = FP.per * FU + 0.45, head = 26 + 20 + fpKeyW();
   const K = Math.max(1, Math.min(6, Math.floor((W / 0.72 - FLEFT - head - 40) / (barUnits * FSTEP))));
   FP.K = K; FP.systems = [];
   for (let b = 1; b <= FP.nBars; b += K) {
@@ -3617,7 +3725,8 @@ function fpLayout() {
   fpShowSel();
 }
 const fpSysOf = bar => FP.systems.find(s => bar >= s.b0 && bar <= s.b1);
-function fpHead(s) { return s.b0 === 1 ? 26 : 0; }
+const fpKeyW = () => FP.p.key ? Math.abs(FP.p.key) * 10 + 6 : 0;
+function fpHead(s) { return (s.b0 === 1 ? 26 : 0) + fpKeyW(); }
 // vị trí x (đơn vị SVG) của một phách trong một dòng
 function fpX(s, bar, beat) {
   const units = (bar - s.b0) * (FP.per * FU + 0.45) + beat * FU;
@@ -3634,13 +3743,13 @@ function fpDrawSystem(s) {
       P[hand][b - 1].forEach(n => {
         if (n.rest) { items.push({ rest: n.dur, span: n.beats * FU, color: mine ? undefined : '#a9b8ba' }); return; }
         const k = st.get(fpKeyOf(hand, b, n.beat));
-        items.push({ note: n.note, dur: n.dur, dot: n.dot, span: n.beats * FU, color: mine ? color[k] : '#a9b8ba',
-          finger: mine && state.settings.finger ? fingerFor(FP.p, hand, n.id) : 0 });
+        items.push({ note: n.note, dur: n.dur, dot: n.dot, span: n.beats * FU, color: mine ? color[k] : '#a9b8ba', hideAcc: coveredByKey(n.note, FP.p.key || 0),
+          finger: mine && state.settings.finger ? (n.finger || fingerFor(FP.p, hand, n.id)) : 0 });
       });
     }
-    return { clef: hand === 'right' ? 'treble' : 'bass', time: s.b0 === 1 ? FP.p.time : null, items };
+    return { clef: hand === 'right' ? 'treble' : 'bass', keySig: FP.p.key || 0, time: s.b0 === 1 ? FP.p.time : null, items };
   };
-  const fullW = FLEFT + 26 + 30 + FP.K * (FP.per * FU + 0.45) * FSTEP + 10;
+  const fullW = FLEFT + 26 + fpKeyW() + 30 + FP.K * (FP.per * FU + 0.45) * FSTEP + 10;
   s.svg = drawStaves(s.svgBox, [staffFor('right'), staffFor('left')], { minWidth: fullW, step: FSTEP, pad: 4.2 * S, aria: 'Ô nhịp ' + s.b0 + '–' + s.b1 });
   s.vbW = fullW;
 }
